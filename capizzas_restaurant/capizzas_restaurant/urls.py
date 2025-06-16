@@ -23,5 +23,5 @@ from . views import HomePageView
 app = 'capizzas_restaurant'
 
 urlpatterns = [
-    path('home/', HomePageView.as_view(), name='home'),
+    path('', HomePageView.as_view(), name='home'),
 ]
