@@ -5,8 +5,6 @@ class HomePageView(TemplateView):
     template_name = 'home.html'    
     context_object_name = 'home'
 
-
-
 def sobre(request):
     return render(request, 'sobre.html')
 
@@ -26,3 +24,6 @@ def cardapio(request):
         {"nome": "Chocolate com Morango", "ingredientes": "Chocolate ao leite e morangos frescos", "preco": "49,90", "imagem": "img/chocolate.jpg"},
     ]
     return render(request, 'cardapio.html', {'pizzas': pizzas})
+
+def carrinho(request):
+    return render(request, 'carrinho.html')
