@@ -88,7 +88,81 @@ footer {
     margin-top: 10px;
     font-size: 0.9em;
 }
+.mapa-container {
+            max-width: 800px;
+            margin: 30px auto;
+            text-align: center;
+        }
 
+.mapa-aviso {
+            background-color: #ffc107;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            margin-bottom: 10px;
+}
+
+iframe {
+            width: 100%;
+            height: 400px;
+            border: none;
+            border-radius: 8px;
+}
+  .busca-container {
+            text-align: center;
+            margin: 30px auto;
+}
+
+.busca-container input {
+            width: 60%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+}
+
+.cardapio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            max-width: 1200px;
+            margin: auto;
+}
+
+.pizza-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.pizza-card img {
+            max-width: 100%;
+            border-radius: 10px;
+            height: 180px;
+            object-fit: cover;
+}
+
+.pizza-card h3 {
+            margin-top: 10px;
+            color: #006400;
+}
+
+.pizza-card p {
+            font-size: 0.95rem;
+            color: #555;
+}
+
+.pizza-card .preco {
+            margin-top: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #000;
+}
 /* RESPONSIVO */
 @media (max-width: 768px) {
     nav {

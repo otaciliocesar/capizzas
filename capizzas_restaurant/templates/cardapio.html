@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Cardápio - Capizzas</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="{% url 'home' %}">
+                <img src="{% static 'img/capizzas.png' %}" alt="Capizzas">
+            </a>
+        </div>
+        <nav>
+            <a href="{% url 'cardapio' %}">Cardápio</a>
+            <a href="#">Promoções</a>
+            <a href="{% url 'localizacao' %}">Localização</a>
+            <a href="{% url 'sobre' %}">Sobre</a>
+            <a href="#">Faça seu pedido</a>
+        </nav>
+    </header>
+
+    <div class="busca-container">
+    <input type="text" id="busca" placeholder="Buscar sabor ou ingrediente...">
+    </div>
+<script>
+document.getElementById("busca").addEventListener("keyup", function () {
+    const termo = this.value.toLowerCase();
+    const pizzas = document.querySelectorAll(".pizza-card");
+
+    pizzas.forEach(function (pizza) {
+        const nome = pizza.querySelector(".pizza-nome").textContent.toLowerCase();
+        const ingredientes = pizza.querySelector(".pizza-ingredientes").textContent.toLowerCase();
+
+        if (nome.includes(termo) || ingredientes.includes(termo)) {
+            pizza.style.display = "block";
+        } else {
+            pizza.style.display = "none";
+        }
+    });
+});
+</script>
+   <div class="cardapio-grid" id="lista-pizzas">
+    {% for pizza in pizzas %}
+    <div class="pizza-card">
+        <img src="{% static pizza.imagem %}" alt="{{ pizza.nome }}">
+        <h3 class="pizza-nome">{{ pizza.nome }}</h3>
+        <p class="pizza-ingredientes">{{ pizza.ingredientes }}</p>
+        <div class="preco">R$ {{ pizza.preco }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+    <footer>
+        <div class="social-icons">
+            <img src="{% static 'img/tiktok.png' %}" alt="TikTok">
+            <img src="{% static 'img/facebook.png' %}" alt="Facebook">
+            <img src="{% static 'img/instagram.png' %}" alt="Instagram">
+        </div>
+        <div class="last-update">
+            Última atualização: Junho de 2025
+        </div>
+    </footer>
+</body>
+</html>
