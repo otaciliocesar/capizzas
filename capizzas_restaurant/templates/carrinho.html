@@ -1,0 +1,25 @@
+{% extends 'home.html' %}
+{% load static %}
+
+{% block content %}
+<h2 style="text-align: center;">Seu Carrinho</h2>
+<div id="lista-carrinho" style="max-width: 600px; margin: auto;"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+    const container = document.getElementById("lista-carrinho");
+
+    if (carrinho.length === 0) {
+        container.innerHTML = "<p>Seu carrinho está vazio.</p>";
+    } else {
+        carrinho.forEach(item => {
+            const div = document.createElement("div");
+            div.style.marginBottom = "15px";
+            div.innerHTML = `<strong>${item.nome}</strong> — Quantidade: ${item.quantidade}`;
+            container.appendChild(div);
+        });
+    }
+});
+</script>
+{% endblock %}
