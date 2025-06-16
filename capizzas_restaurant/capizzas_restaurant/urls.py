@@ -24,4 +24,7 @@ app = 'capizzas_restaurant'
 
 urlpatterns = [
     path('', HomePageView.as_view(), name='home'),
+    path('sobre/', views.sobre, name='sobre'),
+    path('localizacao/', views.localizacao, name='localizacao'),
+    path('cardapio/', views.cardapio, name='cardapio'),
 ]
