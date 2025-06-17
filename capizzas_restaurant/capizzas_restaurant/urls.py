@@ -1,31 +1,15 @@
-"""
-URL configuration for capizzas_restaurant project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-
 from django.contrib import admin
 from django.urls import path
 from . import views
-from . views import HomePageView
+from . views import HomePageView, SobrePageView, LocalizacaoPageView
 
 app = 'capizzas_restaurant'
 
 urlpatterns = [
     path('', HomePageView.as_view(), name='home'),
-    path('sobre/', views.sobre, name='sobre'),
-    path('localizacao/', views.localizacao, name='localizacao'),
-    path('cardapio/', views.cardapio, name='cardapio'),
-    path('carrinho/', views.carrinho, name='carrinho'),
+    path('sobre/', SobrePageView.as_view(), name='sobre'),
+    path('localizacao/', LocalizacaoPageView.as_view(), name='localizacao'),
+    path('cardapio/', views.Cardapio, name='cardapio'),
+    path('carrinho/', views.Carrinho, name='carrinho'),
+   # path('carrinho/novo/', views.CarrinhoNovo, name='carrinho_novo'),
 ]

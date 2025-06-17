@@ -44,11 +44,13 @@ document.getElementById("busca").addEventListener("keyup", function () {
         }
     });
 });
+
+
 </script>
    <div class="cardapio-grid" id="lista-pizzas">
     {% for pizza in pizzas %}
     <div class="pizza-card" data-nome="{{ pizza.nome }}" data-preco="{{ pizza.preco }}">
-        <img src="{% static pizza.imagem %}" alt="{{ pizza.nome }}">
+        <img src="{% static pizza.imagem.url %}" alt="{{ pizza.nome }}">
         <h3 class="pizza-nome">{{ pizza.nome }}</h3>
         <p class="pizza-ingredientes">{{ pizza.ingredientes }}</p>
         <div class="preco">R$ {{ pizza.preco }}</div>
@@ -67,98 +69,14 @@ document.getElementById("busca").addEventListener("keyup", function () {
         </div>
     </footer>
 </body>
-</html>
-<!-- Modal de confirmação -->
-<div id="modal" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.5); z-index: 999;">
-    <div style="background: white; padding: 20px; max-width: 400px; margin: 100px auto; border-radius: 10px; text-align: center;">
-        <h3 id="modal-titulo">Adicionar ao carrinho?</h3>
-        <p id="modal-pizza" style="margin-bottom: 20px;"></p>
-
-        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
-            <button id="btn-menos" style="padding: 10px 15px; font-size: 20px;">−</button>
-            <span id="quantidade" style="margin: 0 15px; font-size: 20px;">1</span>
-            <button id="btn-mais" style="padding: 10px 15px; font-size: 20px;">+</button>
-        </div>
-
-        <div>
-            <button id="btn-confirmar" style="padding:10px 20px; background-color:green; color:white; border:none; border-radius:5px; margin-right:10px;">Sim</button>
-            <button id="btn-cancelar" style="padding:10px 20px; background-color:red; color:white; border:none; border-radius:5px;">Cancelar</button>
-        </div>
-    </div>
-</div>
 <script>
-function atualizarContadorCarrinho() {
-    const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
-    const total = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
-    document.getElementById("contador-carrinho").innerText = total;
-}
-
-// Atualiza o contador ao carregar a página
-document.addEventListener("DOMContentLoaded", atualizarContadorCarrinho);
-
-let quantidadeSelecionada = 1;
-
-// Quando o usuário clica em uma pizza
 document.querySelectorAll(".pizza-card").forEach(card => {
     card.addEventListener("click", function () {
         const nome = this.dataset.nome;
-        const preco = this.dataset.preco;
-
-        document.getElementById("modal-pizza").innerText = `${nome} - R$ ${preco}`;
-        document.getElementById("modal").style.display = "block";
-
-        // Resetar quantidade
-        quantidadeSelecionada = 1;
-        document.getElementById("quantidade").innerText = quantidadeSelecionada;
-
-        document.getElementById("btn-confirmar").dataset.nome = nome;
+        // Redireciona para o carrinho_novo passando o nome da pizza via URL
+        window.location.href = `/carrinho/novo/?pizza_inicial=${encodeURIComponent(nome)}`;
     });
 });
-
-// Fecha o modal se clicar em "Cancelar"
-document.getElementById("btn-cancelar").addEventListener("click", () => {
-    document.getElementById("modal").style.display = "none";
-});
-
-// Quando o usuário confirma a adição da pizza ao carrinho
-document.getElementById("btn-confirmar").addEventListener("click", () => {
-    const nome = document.getElementById("btn-confirmar").dataset.nome;
-
-    const item = {
-        nome: nome,
-        quantidade: quantidadeSelecionada
-    };
-
-    // Recupera carrinho ou cria um novo
-    let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
-
-    // Verifica se a pizza já existe no carrinho
-    let existente = carrinho.find(p => p.nome === item.nome);
-    if (existente) {
-        existente.quantidade += item.quantidade;
-    } else {
-        carrinho.push(item);
-    }
-
-    // Salva o carrinho no localStorage
-    localStorage.setItem("carrinho", JSON.stringify(carrinho));
-    atualizarContadorCarrinho();
-
-    document.getElementById("modal").style.display = "none";
-});
-
-// Botão para aumentar quantidade
-document.getElementById("btn-mais").addEventListener("click", () => {
-    quantidadeSelecionada++;
-    document.getElementById("quantidade").innerText = quantidadeSelecionada;
-});
-
-// Botão para diminuir quantidade
-document.getElementById("btn-menos").addEventListener("click", () => {
-    if (quantidadeSelecionada > 1) {
-        quantidadeSelecionada--;
-        document.getElementById("quantidade").innerText = quantidadeSelecionada;
-    }
-});
 </script>
+</html>
 

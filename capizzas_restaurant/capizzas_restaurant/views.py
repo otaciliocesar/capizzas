@@ -1,29 +1,41 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render
+from capizzas_restaurant.models import Pizza
+from django.shortcuts import render
+from django.core.serializers.json import DjangoJSONEncoder
+import json
+from decimal import Decimal
 
 class HomePageView(TemplateView):    
     template_name = 'home.html'    
     context_object_name = 'home'
 
-def sobre(request):
-    return render(request, 'sobre.html')
+class SobrePageView(TemplateView):
+    template_name = 'sobre.html'
+    context_object_name = 'sobre'
 
-def localizacao(request):
-    return render(request, 'localizacao.html')
+class LocalizacaoPageView(TemplateView):
+    template_name = 'localizacao.html'
+    context_object_name = 'localizacao'
 
-def cardapio(request):
-    pizzas = [
-        {"nome": "Calabresa", "ingredientes": "Molho, mussarela, calabresa e cebola", "preco": "39,90", "imagem": "img/calabresa.jpg"},
-        {"nome": "Frango com Catupiry", "ingredientes": "Molho, frango desfiado e catupiry", "preco": "44,90", "imagem": "img/frangocatupiry.jpg"},
-        {"nome": "Portuguesa", "ingredientes": "Molho, presunto, ovo, cebola e pimentão", "preco": "42,90", "imagem": "img/portuguesa.jpg"},
-        {"nome": "Marguerita", "ingredientes": "Molho, tomate, manjericão e mussarela", "preco": "38,90", "imagem": "img/marguerita.jpg"},
-        {"nome": "Quatro Queijos", "ingredientes": "Mussarela, gorgonzola, provolone e parmesão", "preco": "45,90", "imagem": "img/4queijos.jpg"},
-        {"nome": "Pepperoni", "ingredientes": "Molho, mussarela e pepperoni", "preco": "46,90", "imagem": "img/pepperoni.jpg"},
-        {"nome": "Vegetariana", "ingredientes": "Molho, berinjela, abobrinha e pimentão", "preco": "40,90", "imagem": "img/vegetariana.jpg"},
-        {"nome": "Doce de Banana", "ingredientes": "Banana, açúcar e canela", "preco": "36,90", "imagem": "img/banana.avif"},
-        {"nome": "Chocolate com Morango", "ingredientes": "Chocolate ao leite e morangos frescos", "preco": "49,90", "imagem": "img/chocolate.jpg"},
-    ]
+
+def Cardapio(request):
+    pizzas = Pizza.objects.all()
     return render(request, 'cardapio.html', {'pizzas': pizzas})
 
-def carrinho(request):
+
+def Carrinho(request):
     return render(request, 'carrinho.html')
+
+def NovoPedido(request):
+    pizzas = Pizza.objects.all()
+    return render(request, 'carrinho_novo.html', {'pizzas': pizzas})
+
+def HomeData(request):
+    pizzas = Pizza.objects.all().values('nome', 'ingredientes', 'preco')
+    context = {
+        'pizzas_json': json.dumps(list(pizzas), cls=DjangoJSONEncoder)
+    }
+    return render(request, 'home.html', context)
+
+
