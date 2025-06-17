@@ -163,6 +163,10 @@ iframe {
             font-size: 1.1rem;
             color: #000;
 }
+.etapa { display: none; margin-top: 30px; text-align: center; }
+.pizza-opcao { cursor: pointer; display: inline-block; margin: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; width: 200px; }
+.pizza-opcao:hover { background-color: #f4f4f4; }
+.botao-confirmar { margin-top: 20px; padding: 10px 20px; background-color: green; color: white; border: none; border-radius: 5px; cursor: pointer; }
 /* RESPONSIVO */
 @media (max-width: 768px) {
     nav {

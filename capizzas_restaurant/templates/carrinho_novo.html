@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Montar Pedido - Capizzas</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .pizza-opcao {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .pizza-opcao.selecionada {
+            background-color: #d4f4d4;
+            border-color: #4CAF50;
+        }
+        .botao-confirmar {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px 0 0;
+        }
+        .botao-confirmar:hover {
+            background-color: #45a049;
+        }
+        .etapa {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo">
+        <a href="{% url 'home' %}"><img src="{% static 'img/capizzas.png' %}" alt="Capizzas"></a>
+    </div>
+    <nav>
+        <a href="{% url 'cardapio' %}">Cardápio</a>
+        <a href="#">Promoções</a>
+        <a href="{% url 'localizacao' %}">Localização</a>
+        <a href="{% url 'sobre' %}">Sobre</a>
+        <a href="#">Faça seu pedido</a>
+        <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">
+            🛒 Carrinho (<span id="contador-carrinho">0</span>)
+        </a>
+    </nav>
+</header>
+
+<main style="max-width: 800px; margin: auto;">
+    <h2 style="text-align: center;">Monte seu pedido</h2>
+
+    <!-- Etapa 1: Escolher quantidade de sabores -->
+    <div class="etapa" id="etapa1" style="display: block;">
+        <h3>Quantos sabores deseja?</h3>
+        <button onclick="escolherQuantidadeSabores(1)" class="botao-confirmar">1 Sabor</button>
+        <button onclick="escolherQuantidadeSabores(2)" class="botao-confirmar">2 Sabores</button>
+    </div>
+
+    <!-- Etapa 2: Escolher os sabores -->
+    <div class="etapa" id="etapa2" style="display: none;">
+        <h3 id="etapa2-titulo"></h3>
+        <div id="opcoes-pizza" style="display: flex; flex-wrap: wrap; justify-content: center;"></div>
+        <button onclick="confirmarSabores()" class="botao-confirmar" style="margin-top: 20px;">Confirmar Sabores</button>
+    </div>
+
+    <!-- Etapa 3: Resumo do pedido -->
+    <div class="etapa" id="resumo" style="display: none;">
+        <h3>Resumo do Pedido</h3>
+        <p id="resumo-pedido"></p>
+        <button onclick="finalizarPedido()" class="botao-confirmar">Finalizar Pedido</button>
+    </div>
+</main>
+<script type="application/json" id="pizzas-data">
+    {{ pizzas_json|safe }}
+</script>
+<script>
+    let qtdSabores = 1;
+    let saboresSelecionados = [];
+
+    // Lista das pizzas vindo do backend (JSON)
+    const listaPizzas = JSON.parse(document.getElementById('pizzas-data').textContent);
+    const pizzaInicial = "{{ pizza_inicial }}";
+
+    // Atualiza o contador do carrinho no cabeçalho
+    function atualizarContadorCarrinho() {
+        const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+        const total = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
+        document.getElementById("contador-carrinho").innerText = total;
+    }
+
+    // Função para escolher quantidade de sabores
+    function escolherQuantidadeSabores(qtd) {
+        qtdSabores = qtd;
+        saboresSelecionados = [];  // limpa seleção anterior
+
+        document.getElementById('etapa1').style.display = 'none';
+        document.getElementById('etapa2').style.display = 'block';
+        document.getElementById('resumo').style.display = 'none';
+        document.getElementById('etapa2-titulo').innerText = `Escolha ${qtdSabores} sabor(es)`;
+
+        const container = document.getElementById('opcoes-pizza');
+        container.innerHTML = "";
+
+        listaPizzas.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'pizza-opcao';
+            div.innerHTML = `<strong>${p.nome}</strong><br><small>${p.ingredientes}</small><br><em>R$ ${p.preco}</em>`;
+            div.addEventListener('click', () => selecionarSabor(p.nome, div));
+            container.appendChild(div);
+        });
+
+        // Se tiver pizza inicial e só 1 sabor, pré-seleciona
+        if (pizzaInicial && qtdSabores === 1) {
+            setTimeout(() => {
+                const opcoes = document.querySelectorAll('.pizza-opcao');
+                opcoes.forEach(div => {
+                    if (div.textContent.includes(pizzaInicial)) {
+                        selecionarSabor(pizzaInicial, div);
+                    }
+                });
+            }, 100);
+        }
+    }
+
+    // Seleciona ou desmarca um sabor
+    function selecionarSabor(nome, div) {
+        if (saboresSelecionados.includes(nome)) {
+            saboresSelecionados = saboresSelecionados.filter(s => s !== nome);
+            div.classList.remove('selecionada');
+        } else {
+            if (saboresSelecionados.length >= qtdSabores) {
+                alert("Você já selecionou todos os sabores");
+                return;
+            }
+            saboresSelecionados.push(nome);
+            div.classList.add('selecionada');
+        }
+    }
+
+    // Confirma os sabores selecionados e mostra resumo
+    function confirmarSabores() {
+        if (saboresSelecionados.length !== qtdSabores) {
+            alert("Selecione todos os sabores antes de continuar");
+            return;
+        }
+
+        const descricao = qtdSabores === 1 ? saboresSelecionados[0] : `${saboresSelecionados[0]} / ${saboresSelecionados[1]}`;
+        document.getElementById('etapa2').style.display = 'none';
+        document.getElementById('resumo').style.display = 'block';
+        document.getElementById('resumo-pedido').innerText = `Pizza com ${qtdSabores} sabor(es): ${descricao}`;
+    }
+
+    // Finaliza o pedido, salva no localStorage e redireciona ao carrinho real
+    function finalizarPedido() {
+        const descricao = qtdSabores === 1 ? saboresSelecionados[0] : `${saboresSelecionados[0]} / ${saboresSelecionados[1]}`;
+        const item = {
+            nome: `Pizza (${descricao})`,
+            quantidade: 1
+        };
+
+        let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+
+        // Se já existe item igual, incrementa quantidade
+        let existente = carrinho.find(p => p.nome === item.nome);
+        if (existente) {
+            existente.quantidade += 1;
+        } else {
+            carrinho.push(item);
+        }
+
+        localStorage.setItem("carrinho", JSON.stringify(carrinho));
+
+        // Redireciona para a página real do carrinho
+        window.location.href = "{% url 'carrinho' %}";
+    }
+
+    window.addEventListener("DOMContentLoaded", atualizarContadorCarrinho);
+</script>
+
+</body>
+</html>
