@@ -23,6 +23,15 @@ def Cardapio(request):
     pizzas = Pizza.objects.all()
     return render(request, 'cardapio.html', {'pizzas': pizzas})
 
+class PedidoNovo(TemplateView):
+    template_name = 'pedidopizza.html'
+    context_object_name = 'pedidopizza'
+
+def pedidopizza(request):
+    pizzas = Pizza.objects.all().values('nome', 'ingredientes', 'preco')
+    pizzas_json = json.dumps(list(pizzas), cls=DjangoJSONEncoder)
+    return render(request, 'pedidopizza.html', {'pizzas_json': pizzas_json})
+
 
 def Carrinho(request):
     return render(request, 'carrinho.html')

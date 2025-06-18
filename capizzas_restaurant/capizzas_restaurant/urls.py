@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from . import views
-from . views import HomePageView, SobrePageView, LocalizacaoPageView
+from . views import HomePageView, SobrePageView, LocalizacaoPageView, PedidoNovo
 
 app = 'capizzas_restaurant'
 
@@ -11,5 +11,5 @@ urlpatterns = [
     path('localizacao/', LocalizacaoPageView.as_view(), name='localizacao'),
     path('cardapio/', views.Cardapio, name='cardapio'),
     path('carrinho/', views.Carrinho, name='carrinho'),
-   # path('carrinho/novo/', views.CarrinhoNovo, name='carrinho_novo'),
+    path('pedidopizza/', PedidoNovo.as_view(), name='pedidopizza'),
 ]
