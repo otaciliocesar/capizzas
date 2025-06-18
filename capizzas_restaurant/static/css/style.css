@@ -167,6 +167,33 @@ iframe {
 .pizza-opcao { cursor: pointer; display: inline-block; margin: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; width: 200px; }
 .pizza-opcao:hover { background-color: #f4f4f4; }
 .botao-confirmar { margin-top: 20px; padding: 10px 20px; background-color: green; color: white; border: none; border-radius: 5px; cursor: pointer; }
+.pizza-opcao {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .pizza-opcao.selecionada {
+            background-color: #d4f4d4;
+            border-color: #4CAF50;
+        }
+        .botao-confirmar {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px 0 0;
+        }
+        .botao-confirmar:hover {
+            background-color: #45a049;
+        }
+        .etapa {
+            margin-top: 20px;
+            text-align: center;
+        }
 /* RESPONSIVO */
 @media (max-width: 768px) {
     nav {

@@ -1,0 +1,141 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capizzas</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <div class="logo">
+    <a href="{% url 'home' %}">
+        <img src="{% static 'img/capizzas.png' %}" alt="Capizzas">
+    </a>
+</div>
+        <nav>
+            <a href="{% url 'cardapio' %}">Cardápio</a>
+            <a href="#">Promoções</a>
+            <a href="{% url 'localizacao' %}">Localização</a>
+            <a href="{% url 'sobre' %}">Sobre</a>
+            <a href="{% url 'pedidopizza' %}">Faça seu pedido</a>
+            <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">
+    🛒 Carrinho (<span id="contador-carrinho">0</span>)
+</a>
+
+<body>
+<main class="container">
+    <h2>Monte sua Pizza</h2>
+    <button onclick="iniciarPedido()" class="btn btn-primary">Novo Pedido</button>
+
+    <div id="etapas" style="display:none; margin-top: 20px;">
+        <!-- Etapa 1: Escolher quantidade de sabores -->
+        <div id="etapa1">
+            <h4>Escolha a quantidade de sabores:</h4>
+            <button class="btn btn-outline-primary" onclick="escolherQuantidadeSabores(1)">1 Sabor</button>
+            <button class="btn btn-outline-primary" onclick="escolherQuantidadeSabores(2)">2 Sabores</button>
+        </div>
+
+        <!-- Etapa 2: Selecionar sabores -->
+        <div id="etapa2" style="display:none;">
+            <h4 id="etapa2-titulo"></h4>
+            <div id="opcoes-pizza" class="row mt-3"></div>
+            <button class="btn btn-success mt-3" onclick="confirmarSabores()">Confirmar Sabores</button>
+        </div>
+    </div>
+
+    <!-- Resumo do pedido -->
+    <div id="resumo" style="display:none; margin-top: 30px;">
+        <h4>Resumo do Pedido:</h4>
+        <p id="resumo-pedido"></p>
+        <button class="btn btn-success" onclick="finalizarPedido()">Adicionar ao Carrinho</button>
+    </div>
+</main>
+</body>
+
+
+<script>
+let qtdSabores = 1;
+let saboresSelecionados = [];
+const listaPizzas = {{ pizzas|safe }};
+
+function iniciarPedido() {
+    document.getElementById('etapas').style.display = 'block';
+    document.getElementById('etapa1').style.display = 'block';
+    document.getElementById('etapa2').style.display = 'none';
+    document.getElementById('resumo').style.display = 'none';
+    saboresSelecionados = [];
+}
+
+function escolherQuantidadeSabores(qtd) {
+    qtdSabores = qtd;
+    document.getElementById('etapa1').style.display = 'none';
+    document.getElementById('etapa2').style.display = 'block';
+    document.getElementById('etapa2-titulo').innerText = `Escolha ${qtdSabores} sabor(es):`;
+
+    const container = document.getElementById('opcoes-pizza');
+    container.innerHTML = "";
+    listaPizzas.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'col-md-4 mb-3';
+        div.innerHTML = `
+            <div class="card pizza-opcao p-2" style="cursor:pointer;">
+                <strong>${p.nome}</strong><br>
+                <small>${p.ingredientes}</small><br>
+                <em>R$ ${p.preco}</em>
+            </div>`;
+        div.addEventListener('click', () => selecionarSabor(p.nome, div.querySelector('.pizza-opcao')));
+        container.appendChild(div);
+    });
+}
+
+function selecionarSabor(nome, div) {
+    if (saboresSelecionados.includes(nome)) {
+        saboresSelecionados = saboresSelecionados.filter(s => s !== nome);
+        div.style.backgroundColor = '';
+    } else {
+        if (saboresSelecionados.length >= qtdSabores) {
+            alert("Você já selecionou todos os sabores");
+            return;
+        }
+        saboresSelecionados.push(nome);
+        div.style.backgroundColor = '#d4f4d4';
+        if (qtdSabores === 2 && saboresSelecionados.length === 1) {
+            alert("Selecione o segundo sabor");
+        }
+    }
+}
+
+function confirmarSabores() {
+    if (saboresSelecionados.length !== qtdSabores) {
+        alert("Selecione todos os sabores antes de continuar");
+        return;
+    }
+
+    const descricao = qtdSabores === 1
+        ? saboresSelecionados[0]
+        : `${saboresSelecionados[0]} / ${saboresSelecionados[1]}`;
+
+    document.getElementById('etapa2').style.display = 'none';
+    document.getElementById('resumo').style.display = 'block';
+    document.getElementById('resumo-pedido').innerText = `Pizza com ${qtdSabores} sabor(es): ${descricao}`;
+}
+
+function finalizarPedido() {
+    const descricao = qtdSabores === 1
+        ? saboresSelecionados[0]
+        : `${saboresSelecionados[0]} / ${saboresSelecionados[1]}`;
+
+    const item = {
+        nome: `Pizza (${descricao})`,
+        quantidade: 1
+    };
+
+    let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+    carrinho.push(item);
+    localStorage.setItem("carrinho", JSON.stringify(carrinho));
+
+    window.location.href = "{% url 'carrinho' %}";
+}
+</script>
