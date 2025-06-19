@@ -8,3 +8,10 @@ class Pizza(models.Model):
 
     def __str__(self):
         return self.nome
+
+class Compra(models.Model):
+    nome = models.ForeignKey(Pizza, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.nome} vendido em {self.timestamp.strftime('%d/%m/%Y %H:%M')}"
