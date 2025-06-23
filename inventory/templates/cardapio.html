@@ -50,7 +50,11 @@ document.getElementById("busca").addEventListener("keyup", function () {
    <div class="cardapio-grid" id="lista-pizzas">
     {% for pizza in pizzas %}
     <div class="pizza-card" data-nome="{{ pizza.nome }}" data-preco="{{ pizza.preco }}">
+        {% if pizza.imagem %}
         <img src="{% static pizza.imagem.url %}" alt="{{ pizza.nome }}">
+        {% else %}
+        <img src="/static/images/pizzapromo2.jpg" alt="No image available">
+        {% endif %}
         <h3 class="pizza-nome">{{ pizza.nome }}</h3>
         <p class="pizza-ingredientes">{{ pizza.ingredientes }}</p>
         <div class="preco">R$ {{ pizza.preco }}</div>

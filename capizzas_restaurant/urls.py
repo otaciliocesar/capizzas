@@ -13,5 +13,5 @@ urlpatterns = [
     path('localizacao/', LocalizacaoPageView.as_view(), name='localizacao'),
     path('cardapio/', views.Cardapio, name='cardapio'),
     path('carrinho/', views.Carrinho, name='carrinho'),
-   # path('comprapizza/add/', views.CompraPizza, name='comprapizza'),
+    path('pedidopizza/add/', views.CompraPizza, name='pedidopizza'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

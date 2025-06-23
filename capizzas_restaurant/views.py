@@ -24,15 +24,15 @@ def Cardapio(request):
     pizzas = Pizza.objects.all()
     return render(request, 'cardapio.html', {'pizzas': pizzas})
 
-#***#** def CompraPizza(request):
- #   if request.method == 'POST':
-  #      form = CompraForm(request.POST)
- #       if form.is_valid():
-  #          form.save()
-  #          return redirect('home')
- #   else:
-  #      form = CompraForm()
-  #  return render(request, 'comprapizza_form.html', {'form': form}) **
+def CompraPizza(request):
+    if request.method == 'POST':
+        form = PizzaForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    else:
+        form = PizzaForm()
+    return render(request, 'comprapizza_form.html', {'form': form}) 
 
 
         
