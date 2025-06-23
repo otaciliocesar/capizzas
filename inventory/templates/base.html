@@ -4,39 +4,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capizzas</title>
+    <title>{% block title %}Capizzas{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
     <header>
         <div class="logo">
-    <a href="{% url 'home' %}">
-        <img src="{% static 'img/capizzas.png' %}" alt="Capizzas">
-    </a>
-</div>
+            <a href="{% url 'base' %}">
+                <img src="{% static 'img/capizzas.png' %}" alt="Capizzas">
+            </a>
+        </div>
         <nav>
             <a href="{% url 'cardapio' %}">Cardápio</a>
             <a href="#">Promoções</a>
             <a href="{% url 'localizacao' %}">Localização</a>
             <a href="{% url 'sobre' %}">Sobre</a>
-            <a href="{% url 'pedidopizza' %}">Faça seu pedido</a>
+            <a href="{% url 'cadastropizza' %}">Faça seu pedido</a>
             <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">
-    🛒 Carrinho (<span id="contador-carrinho">0</span>)
-</a>
-          
+                🛒 Carrinho (<span id="contador-carrinho">0</span>)
+            </a>
+            <a href="{% url 'login' %}" class="login-btn">Login</a>
         </nav>
     </header>
-
-    <div class="content">
+{% block content %}
+<div class="content">
         <h1>Promoções do Dia!</h1>
-        <div>
+        <div>             
             <img src="{% static 'img/pizzapromo.jpg' %}" alt="Promoção 1">
-            <img src="{% static 'img/pizzapromo2.jpg' %}" alt="Promoção 2">
+            <img src="{% static 'img/pizzapromo2.jpg' %}" alt="Promoção 2">             
         </div>
         <button class="order-btn">Peça Agora</button>
     </div>
-
-    <footer>
+{% endblock %}
+    
+{% block footer %}
+     <footer>
         <div class="social-icons">
             <a href="https://www.tiktok.com" target="_blank"><img src="{% static 'img/tiktok.png' %}" alt="TikTok"></a>
             <a href="https://www.facebook.com" target="_blank"><img src="{% static 'img/facebook.png' %}" alt="Facebook"></a>
@@ -44,5 +46,6 @@
         </div>
         <div class="last-update">Última atualização: Junho de 2025</div>
     </footer>
+{% endblock %}
 </body>
 </html>
