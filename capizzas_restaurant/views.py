@@ -8,8 +8,8 @@ from decimal import Decimal
 from .forms import PizzaForm
 
 class HomePageView(TemplateView):    
-    template_name = 'home.html'    
-    context_object_name = 'home'
+    template_name = 'base.html'    
+    context_object_name = 'base'
 
 class SobrePageView(TemplateView):
     template_name = 'sobre.html'
@@ -19,12 +19,16 @@ class LocalizacaoPageView(TemplateView):
     template_name = 'localizacao.html'
     context_object_name = 'localizacao'
 
+class LoginPageView(TemplateView):
+    template_name = 'login.html'
+    context_object_name = 'login'
+
 
 def Cardapio(request):
     pizzas = Pizza.objects.all()
     return render(request, 'cardapio.html', {'pizzas': pizzas})
 
-def CompraPizza(request):
+def CadastroPizza(request):
     if request.method == 'POST':
         form = PizzaForm(request.POST, request.FILES)
         if form.is_valid():
@@ -32,7 +36,7 @@ def CompraPizza(request):
             return redirect('home')
     else:
         form = PizzaForm()
-    return render(request, 'comprapizza_form.html', {'form': form}) 
+    return render(request, 'cadastropizza_form.html', {'form': form}) 
 
 
         
