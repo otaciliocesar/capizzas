@@ -16,5 +16,7 @@ urlpatterns = [
     path('carrinho/', views.Carrinho, name='carrinho'),
     path('login/', LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
-    path('cadastropizza/add/', views.CadastroPizza, name='cadastropizza'),
+    path('cadastropizza/add/', views.cadastro_pizza, name='cadastropizza'),
+    path('cadastropizza/<int:id>/editar/', views.editar_pizza, name='editar_pizza'),
+    path('cadastropizza/excluir/<int:pizza_id>/', views.excluir_pizza, name='excluir_pizza'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
