@@ -1,33 +1,28 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Cardápio - Capizzas</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
-    <header>
-        <div class="logo">
-            <a href="{% url 'base' %}">
-                <img src="{% static 'img/capizzas.png' %}" alt="Capizzas">
-            </a>
-        </div>
-        <nav>
-            <a href="{% url 'cardapio' %}">Cardápio</a>
-            <a href="#">Promoções</a>
-            <a href="{% url 'localizacao' %}">Localização</a>
-            <a href="{% url 'sobre' %}">Sobre</a>
-            <a href="#">Faça seu pedido</a>
-            <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">
-    🛒 Carrinho (<span id="contador-carrinho">0</span>)
-</a>
-        </nav>
-    </header>
 
-    <div class="busca-container">
+{% block title %}Cardápio - Capizzas{% endblock %}
+
+{% block content %}
+<div class="busca-container">
     <input type="text" id="busca" placeholder="Buscar sabor ou ingrediente...">
+</div>
+
+<div class="cardapio-grid" id="lista-pizzas">
+    {% for pizza in pizzas %}
+    <div class="pizza-card" data-nome="{{ pizza.nome }}" data-preco="{{ pizza.preco }}">
+        {% if pizza.imagem %}
+        <img src="{{ pizza.imagem.url }}" alt="{{ pizza.nome }}">
+        {% else %}
+        <img src="{% static 'img/pizzapromo2.jpg' %}" alt="No image available">
+        {% endif %}
+        <h3 class="pizza-nome">{{ pizza.nome }}</h3>
+        <p class="pizza-ingredientes">{{ pizza.ingredientes }}</p>
+        <div class="preco">R$ {{ pizza.preco }}</div>
     </div>
+    {% endfor %}
+</div>
+
 <script>
 document.getElementById("busca").addEventListener("keyup", function () {
     const termo = this.value.toLowerCase();
@@ -45,42 +40,11 @@ document.getElementById("busca").addEventListener("keyup", function () {
     });
 });
 
-
-</script>
-   <div class="cardapio-grid" id="lista-pizzas">
-    {% for pizza in pizzas %}
-    <div class="pizza-card" data-nome="{{ pizza.nome }}" data-preco="{{ pizza.preco }}">
-        {% if pizza.imagem %}
-        <img src="{{ pizza.imagem.url }}" alt="{{ pizza.nome }}">
-        {% else %}
-        <img src="{% static 'images/pizzapromo2.jpg' %}" alt="No image available">
-        {% endif %}
-        <h3 class="pizza-nome">{{ pizza.nome }}</h3>
-        <p class="pizza-ingredientes">{{ pizza.ingredientes }}</p>
-        <div class="preco">R$ {{ pizza.preco }}</div>
-    </div>
-    {% endfor %}
-</div>
-
-    <footer>
-        <div class="social-icons">
-            <img src="{% static 'img/tiktok.png' %}" alt="TikTok">
-            <img src="{% static 'img/facebook.png' %}" alt="Facebook">
-            <img src="{% static 'img/instagram.png' %}" alt="Instagram">
-        </div>
-        <div class="last-update">
-            Última atualização: Junho de 2025
-        </div>
-    </footer>
-</body>
-<script>
 document.querySelectorAll(".pizza-card").forEach(card => {
     card.addEventListener("click", function () {
         const nome = this.dataset.nome;
-        // Redireciona para o carrinho_novo passando o nome da pizza via URL
         window.location.href = `/carrinho/novo/?pizza_inicial=${encodeURIComponent(nome)}`;
     });
 });
 </script>
-</html>
-
+{% endblock %}

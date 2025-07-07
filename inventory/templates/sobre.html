@@ -7,21 +7,34 @@
    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <header>
+    <header class="header">
         <div class="logo">
-    <a href="{% url 'base' %}">
-        <img src="{% static 'img/capizzas.png' %}" alt="Capizzas">
-    </a>
-</div>
+            <a href="{% url 'base' %}">
+                <img src="/media/pizzas/capizzas.png" alt="Capizzas">
+            </a>
+        </div>
         <nav>
             <a href="{% url 'cardapio' %}">Cardápio</a>
             <a href="#">Promoções</a>
             <a href="{% url 'localizacao' %}">Localização</a>
             <a href="{% url 'sobre' %}">Sobre</a>
-            <a href="#">Faça seu pedido</a>
+            <a href="{% url 'cadastropizza' %}">Cadastrar pizza</a>
             <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">
-    🛒 Carrinho (<span id="contador-carrinho">0</span>)
-</a>
+                🛒 Carrinho (<span id="contador-carrinho">0</span>)
+            </a>
+            {% if user.is_authenticated %}
+            Olá, {{ user.username }}!
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="login-btn" style="background:none; border:none; color:inherit; cursor:pointer;">
+            Logout
+            </button>
+            </form>
+            {% else %}
+            <a href="{% url 'login' %}" class="login-btn">Login</a>
+            {% endif %}
+
+  
         </nav>
     </header>
 
@@ -38,13 +51,11 @@
 
     <footer>
         <div class="social-icons">
-            <img src="{% static 'img/tiktok.png' %}" alt="TikTok">
-            <img src="{% static 'img/facebook.png' %}" alt="Facebook">
-            <img src="{% static 'img/instagram.png' %}" alt="Instagram">
+            <a href="https://www.tiktok.com" target="_blank"><img src="/media/pizzas/tiktok.png" alt="TikTok"></a>
+            <a href="https://www.facebook.com" target="_blank"><img src="/media/pizzas/facebook.png" alt="Facebook"></a>
+            <a href="https://www.instagram.com" target="_blank"><img src="/media/pizzas/instagram.png" alt="Instagram"></a>
         </div>
-        <div class="last-update">
-            Última atualização: Junho de 2025
-        </div>
+        <div class="last-update">Última atualização: Junho de 2025</div>
     </footer>
 </body>
 </html>
