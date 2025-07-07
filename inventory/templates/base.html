@@ -19,7 +19,9 @@
             <a href="#">Promoções</a>
             <a href="{% url 'localizacao' %}">Localização</a>
             <a href="{% url 'sobre' %}">Sobre</a>
-            <a href="{% url 'cadastropizza' %}">Faça seu pedido</a>
+            {% if user.is_authenticated and user.is_superuser %}
+            <a href="{% url 'cadastropizza' %}">Cadastro de pizza</a>
+            {% endif %}
             <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">
                 🛒 Carrinho (<span id="contador-carrinho">0</span>)
             </a>

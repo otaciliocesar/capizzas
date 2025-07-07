@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'capizzas_restaurant',
+    'capizzas_restaurant.apps.CapizzasRestaurantConfig',
 ]
 
 MIDDLEWARE = [

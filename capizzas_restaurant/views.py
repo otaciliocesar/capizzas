@@ -1,7 +1,7 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
 from capizzas_restaurant.models import Pizza
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from decimal import Decimal
@@ -28,15 +28,41 @@ def Cardapio(request):
     pizzas = Pizza.objects.all()
     return render(request, 'cardapio.html', {'pizzas': pizzas})
 
-def CadastroPizza(request):
+def cadastro_pizza(request):
+    if not request.user.is_superuser:
+        return redirect('base')  # ou uma mensagem de erro
+
     if request.method == 'POST':
         form = PizzaForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect('home')
+            return redirect('cadastropizza')
     else:
         form = PizzaForm()
-    return render(request, 'cadastropizza_form.html', {'form': form}) 
+
+    pizzas = Pizza.objects.all().order_by('nome')
+    return render(request, 'cadastropizza_form.html', {'form': form, 'pizzas': pizzas})
+
+
+def editar_pizza(request, id):
+    pizza = get_object_or_404(Pizza, id=id)
+    if request.method == 'POST':
+        form = PizzaForm(request.POST, request.FILES, instance=pizza)
+        if form.is_valid():
+            form.save()
+            return redirect('cadastropizza')
+    else:
+        form = PizzaForm(instance=pizza)
+    pizzas = Pizza.objects.all()
+    return render(request, 'cadastropizza_form.html', {'form': form, 'pizzas': pizzas})
+
+def excluir_pizza(request, pizza_id):
+    if not request.user.is_superuser:
+        return redirect('cadastropizza')  # Protege para só admin excluir
+
+    pizza = get_object_or_404(Pizza, id=pizza_id)
+    pizza.delete()
+    return redirect('cadastropizza')
 
 
         
