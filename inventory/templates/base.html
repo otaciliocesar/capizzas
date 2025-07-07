@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
+    {% block header %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,9 +24,22 @@
             <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">
                 🛒 Carrinho (<span id="contador-carrinho">0</span>)
             </a>
+            {% if user.is_authenticated %}
+            Olá, {{ user.username }}!
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="login-btn" style="background:none; border:none; color:inherit; cursor:pointer;">
+            Logout
+            </button>
+            </form>
+            {% else %}
             <a href="{% url 'login' %}" class="login-btn">Login</a>
+            {% endif %}
+
+  
         </nav>
     </header>
+    {% endblock %}
 {% block content %}
 <div class="content">
         <h1>Promoções do Dia!</h1>

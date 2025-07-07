@@ -11,7 +11,7 @@ body {
 
 /* HEADER */
 header {
-    background-color: #333; /* Cor de fundo do cabeçalho */
+    background-color: #3e7c26; /* Cor de fundo do cabeçalho */
     color: white;
     padding: 10px 20px;
     display: flex; /* Habilita Flexbox */
@@ -322,7 +322,7 @@ iframe {
     text-decoration: underline;
 }
 .minimal-header {
-    background-color: #333; /* Ou a cor que preferir */
+    background-color: #3e7c26; /* Ou a cor que preferir */
     padding: 15px 20px;
     display: flex;
     justify-content: center; /* Centraliza o logo horizontalmente */
