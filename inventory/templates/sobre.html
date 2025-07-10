@@ -1,40 +1,6 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Sobre - Capizzas</title>
-   <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
-    <header class="header">
-        <div class="logo">
-            <a href="{% url 'base' %}">
-                <img src="/media/pizzas/capizzas.png" alt="Capizzas">
-            </a>
-        </div>
-        <nav>
-            <a href="{% url 'cardapio' %}">Cardápio</a>
-            <a href="#">Promoções</a>
-            <a href="{% url 'localizacao' %}">Localização</a>
-            <a href="{% url 'sobre' %}">Sobre</a>
-            <a href="{% url 'cadastropizza' %}">Cadastrar pizza</a>
-            <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">Fazer pedido</a> 
-            {% if user.is_authenticated %}
-            Olá, {{ user.username }}!
-            <form action="{% url 'logout' %}" method="post" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="login-btn" style="background:none; border:none; color:inherit; cursor:pointer;">
-            Logout
-            </button>
-            </form>
-            {% else %}
-            <a href="{% url 'login' %}" class="login-btn">Login</a>
-            {% endif %}
-
-  
-        </nav>
-    </header>
+{% block content %}
 
     <div class="content">
         <h1>Sobre a Capizzas</h1>
@@ -47,13 +13,4 @@
         </p>
     </div>
 
-    <footer>
-        <div class="social-icons">
-            <a href="https://www.tiktok.com" target="_blank"><img src="/media/pizzas/tiktok.png" alt="TikTok"></a>
-            <a href="https://www.facebook.com" target="_blank"><img src="/media/pizzas/facebook.png" alt="Facebook"></a>
-            <a href="https://www.instagram.com" target="_blank"><img src="/media/pizzas/instagram.png" alt="Instagram"></a>
-        </div>
-        <div class="last-update">Última atualização: Junho de 2025</div>
-    </footer>
-</body>
-</html>
+  {% endblock %}
