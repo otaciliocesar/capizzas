@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Cliente</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<header class="header">
+    <div class="logo">
+        <a href="{% url 'base' %}">
+            <img src="/media/pizzas/capizzas.png" alt="Capizzas">
+        </a>
+    </div>
+    <nav>
+        <a href="{% url 'cardapio' %}">Cardápio</a>
+        <a href="#">Promoções</a>
+        <a href="{% url 'localizacao' %}">Localização</a>
+        <a href="{% url 'sobre' %}">Sobre</a>
+        {% if user.is_authenticated and user.is_superuser %}
+        <a href="{% url 'cadastropizza' %}">Cadastro de pizza</a>
+        {% endif %}
+        <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">
+            🛒 Carrinho (<span id="contador-carrinho">0</span>)
+        </a>
+        {% if user.is_authenticated %}
+        Olá, {{ user.username }}!
+        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="login-btn">Logout</button>
+        </form>
+        {% else %}
+        <a href="{% url 'login' %}" class="login-btn">Login</a>
+        {% endif %}
+    </nav>
+</header>
+
+<main class="registro-container">
+    <h2>Cadastro de Cliente</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.nome.label_tag }}
+            {{ form.nome }}
+        </div>
+        <div class="form-group">
+            {{ form.sobrenome.label_tag }}
+            {{ form.sobrenome }}
+        </div>
+        <div class="form-group">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+        </div>
+        <div class="form-group">
+            {{ form.endereco_entrega.label_tag }}
+            {{ form.endereco_entrega }}
+        </div>
+        <div class="form-group">
+            {{ form.numero.label_tag }}
+            {{ form.numero }}
+        </div>
+        <div class="form-group">
+            {{ form.senha.label_tag }}
+            {{ form.senha }}
+        </div>
+        <button type="submit" class="submit-btn">Cadastrar</button>
+    </form>
+</main>
+
+<footer>
+    <div class="social-icons">
+        <a href="https://www.tiktok.com" target="_blank"><img src="/media/pizzas/tiktok.png" alt="TikTok"></a>
+        <a href="https://www.facebook.com" target="_blank"><img src="/media/pizzas/facebook.png" alt="Facebook"></a>
+        <a href="https://www.instagram.com" target="_blank"><img src="/media/pizzas/instagram.png" alt="Instagram"></a>
+    </div>
+    <div class="last-update">Última atualização: Junho de 2025</div>
+</footer>
+</body>
+</html>

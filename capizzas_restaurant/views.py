@@ -1,11 +1,13 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
-from capizzas_restaurant.models import Pizza
+from capizzas_restaurant.models import Pizza, Cliente
 from django.shortcuts import render, get_object_or_404
 from django.core.serializers.json import DjangoJSONEncoder
 import json
+from django.contrib import messages
 from decimal import Decimal
-from .forms import PizzaForm
+from .forms import PizzaForm, ClienteForm
+from django.contrib.auth.hashers import make_password, check_password
 
 class HomePageView(TemplateView):    
     template_name = 'base.html'    
@@ -87,3 +89,37 @@ def HomeData(request):
     return render(request, 'home.html', context)
 
 
+def cadastro_cliente(request):
+    if request.method == 'POST':
+        form = ClienteForm(request.POST)
+        if form.is_valid():
+            cliente = form.save(commit=False)
+            cliente.senha = make_password(form.cleaned_data['senha'])  # <- Aqui criptografa a senha
+            cliente.save()
+            return redirect('login_cliente')  # redireciona para login após cadastro
+    else:
+        form = ClienteForm()
+    
+    return render(request, 'cadastrocliente_form.html', {'form': form})
+
+def login_cliente(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        senha = request.POST.get('senha')
+
+        try:
+            cliente = Cliente.objects.get(email=email)
+            if check_password(senha, cliente.senha):
+                request.session['cliente_id'] = cliente.pk
+                request.session['cliente_nome'] = cliente.nome
+                return redirect('cardapio')
+            else:
+                messages.error(request, 'Senha incorreta.')
+        except Cliente.DoesNotExist:
+            messages.error(request, 'E-mail não encontrado.')
+
+    return render(request, 'login_cliente.html')
+
+def logout_cliente(request):
+    request.session.flush()  # Remove todas as variáveis de sessão
+    return redirect('base')  # Ou para onde quiser redirecionar após o logout

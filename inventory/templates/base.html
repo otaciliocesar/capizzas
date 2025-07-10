@@ -14,31 +14,33 @@
                 <img src="/media/pizzas/capizzas.png" alt="Capizzas">
             </a>
         </div>
-        <nav>
-            <a href="{% url 'cardapio' %}">Cardápio</a>
-            <a href="#">Promoções</a>
-            <a href="{% url 'localizacao' %}">Localização</a>
-            <a href="{% url 'sobre' %}">Sobre</a>
-            {% if user.is_authenticated and user.is_superuser %}
-            <a href="{% url 'cadastropizza' %}">Cadastro de pizza</a>
-            {% endif %}
-            <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">
-                🛒 Carrinho (<span id="contador-carrinho">0</span>)
-            </a>
-            {% if user.is_authenticated %}
-            Olá, {{ user.username }}!
-            <form action="{% url 'logout' %}" method="post" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="login-btn" style="background:none; border:none; color:inherit; cursor:pointer;">
-            Logout
-            </button>
-            </form>
-            {% else %}
-            <a href="{% url 'login' %}" class="login-btn">Login</a>
-            {% endif %}
+       <nav>
+    <a href="{% url 'cardapio' %}">Cardápio</a>
+    <a href="#">Promoções</a>
+    <a href="{% url 'localizacao' %}">Localização</a>
+    <a href="{% url 'sobre' %}">Sobre</a>
+    {% if user.is_authenticated and user.is_superuser %}
+        <a href="{% url 'cadastropizza' %}">Cadastro de pizza</a>
+    {% endif %}
+    <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">
+        🛒 Carrinho (<span id="contador-carrinho">0</span>)
+    </a>
 
-  
-        </nav>
+    {% if user.is_authenticated %}
+        Olá, {{ user.username }}!
+        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="login-btn">Logout</button>
+        </form>
+
+    {% elif request.session.cliente_nome %}
+        Olá, {{ request.session.cliente_nome }}!
+        <a href="{% url 'logout_cliente' %}" class="login-btn">Logout</a>
+
+    {% else %}        
+        <a href="{% url 'login_cliente' %}" class="login-btn">Login</a>
+    {% endif %}
+</nav>
     </header>
     
 {% block content %}
