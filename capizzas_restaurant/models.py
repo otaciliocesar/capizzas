@@ -2,10 +2,15 @@ from django.db import models
 
 class Cliente(models.Model):
     nome = models.CharField(max_length=100)
-    email = models.EmailField(blank=True, null=True)
+    sobrenome = models.CharField(max_length=100)
+    senha = models.CharField(max_length=128)
+    email = models.EmailField(unique=True)
+    endereco_entrega = models.CharField(max_length=200)
+    numero = models.CharField(max_length=11)
 
     def __str__(self):
-        return self.nome
+        return f"{self.nome} {self.sobrenome}"
+
 
 class Pizza(models.Model):
     nome = models.CharField(max_length=100)

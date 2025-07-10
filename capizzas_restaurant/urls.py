@@ -15,8 +15,11 @@ urlpatterns = [
     path('cardapio/', views.Cardapio, name='cardapio'),
     path('carrinho/', views.Carrinho, name='carrinho'),
     path('login/', LoginView.as_view(template_name='login.html'), name='login'),
+    path('login_cliente/', views.login_cliente, name='login_cliente'),
+    path('logout_cliente/', views.logout_cliente, name='logout_cliente'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('cadastropizza/add/', views.cadastro_pizza, name='cadastropizza'),
     path('cadastropizza/<int:id>/editar/', views.editar_pizza, name='editar_pizza'),
     path('cadastropizza/excluir/<int:pizza_id>/', views.excluir_pizza, name='excluir_pizza'),
+    path('cadastrocliente/', views.cadastro_cliente, name='cadastrocliente'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
