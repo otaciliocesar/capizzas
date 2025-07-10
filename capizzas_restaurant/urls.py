@@ -13,7 +13,7 @@ urlpatterns = [
     path('sobre/', SobrePageView.as_view(), name='sobre'),
     path('localizacao/', LocalizacaoPageView.as_view(), name='localizacao'),
     path('cardapio/', views.Cardapio, name='cardapio'),
-    path('carrinho/', views.Carrinho, name='carrinho'),
+    path('carrinho/', views.carrinho_view, name='carrinho'),
     path('login/', LoginView.as_view(template_name='login.html'), name='login'),
     path('login_cliente/', views.login_cliente, name='login_cliente'),
     path('logout_cliente/', views.logout_cliente, name='logout_cliente'),

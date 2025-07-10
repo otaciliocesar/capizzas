@@ -563,3 +563,118 @@ footer .last-update {
     background-color: #d32f2f;
 }
 
+.pizza-card.selecionada {
+    border: 2px solid #2eb144;
+    box-shadow: 0 0 10px rgba(46, 177, 68, 0.4);
+    background-color: #f0fff4;
+    transform: scale(1.03);
+}
+
+#formulario-pedido {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.filtro-input {
+    width: 300px;
+    max-width: 90%;
+}
+
+.pizza-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    transition: 0.3s ease;
+    cursor: pointer;
+}
+
+.pizza-card.selecionada {
+    border: 2px solid #28a745;
+    background-color: #f6fff6;
+}
+.centralizar-escolha {
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+.centralizar-escolha .btn-group {
+    display: inline-flex;
+}
+.container {
+  max-width: 600px;  /* Ajuste a largura máxima que desejar */
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.btn-sabores {
+  display: inline-flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 1rem; /* margem abaixo dos botões para separar do filtro */
+}
+.btn-sabores .btn {
+  padding: 14px 32px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-width: 140px;
+}
+
+.btn-sabores .btn-primary {
+  background-color: #007bff;
+}
+
+.btn-sabores .btn-primary:hover,
+.btn-sabores .btn-primary:focus {
+  background-color: #0056b3;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  transform: translateY(-2px);
+}
+
+.btn-sabores .btn-success {
+  background-color: #28a745;
+}
+
+.btn-sabores .btn-success:hover,
+.btn-sabores .btn-success:focus {
+  background-color: #1e7e34;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  transform: translateY(-2px);
+}
+
+/* Container dos botões e filtro */
+.escolha-e-filtro {
+  max-width: 400px;
+  margin: 0 auto 1.5rem auto; /* centraliza e dá margem inferior para o bloco inteiro */
+  text-align: center;
+}
+
+/* Filtro */
+#filtro-container {
+  margin-top: 0; /* remover margem superior, já tem margem nos botões */
+}
+
+/* Input do filtro centralizado */
+.filtro-input {
+  width: 100%;
+  max-width: 300px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  font-size: 1rem;
+  display: inline-block;
+}
