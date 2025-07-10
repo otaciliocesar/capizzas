@@ -1,40 +1,7 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Cliente</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
-<header class="header">
-    <div class="logo">
-        <a href="{% url 'base' %}">
-            <img src="/media/pizzas/capizzas.png" alt="Capizzas">
-        </a>
-    </div>
-    <nav>
-        <a href="{% url 'cardapio' %}">Cardápio</a>
-        <a href="#">Promoções</a>
-        <a href="{% url 'localizacao' %}">Localização</a>
-        <a href="{% url 'sobre' %}">Sobre</a>
-        {% if user.is_authenticated and user.is_superuser %}
-        <a href="{% url 'cadastropizza' %}">Cadastro de pizza</a>
-        {% endif %}
-       <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">Fazer pedido</a> 
-        {% if user.is_authenticated %}
-        Olá, {{ user.username }}!
-        <form action="{% url 'logout' %}" method="post" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="login-btn">Logout</button>
-        </form>
-        {% else %}
-        <a href="{% url 'login' %}" class="login-btn">Login</a>
-        {% endif %}
-    </nav>
-</header>
 
+{% block content %}
 <main class="registro-container">
     <h2>Cadastro de Cliente</h2>
     <form method="post">
@@ -67,13 +34,4 @@
     </form>
 </main>
 
-<footer>
-    <div class="social-icons">
-        <a href="https://www.tiktok.com" target="_blank"><img src="/media/pizzas/tiktok.png" alt="TikTok"></a>
-        <a href="https://www.facebook.com" target="_blank"><img src="/media/pizzas/facebook.png" alt="Facebook"></a>
-        <a href="https://www.instagram.com" target="_blank"><img src="/media/pizzas/instagram.png" alt="Instagram"></a>
-    </div>
-    <div class="last-update">Última atualização: Junho de 2025</div>
-</footer>
-</body>
-</html>
+{% endblock %}

@@ -1,30 +1,5 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block header %}
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capizzas</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
-    <header>
-        <div class="logo">
-            <a href="{% url 'base' %}">
-                <img src="{% static 'img/capizzas.png' %}" alt="Capizzas">
-            </a>
-        </div>
-        <nav>
-            <a href="{% url 'cardapio' %}">Cardápio</a>
-            <a href="#">Promoções</a>
-            <a href="{% url 'localizacao' %}">Localização</a>
-            <a href="{% url 'sobre' %}">Sobre</a>
-            <a href="{% url 'cadastropizza' %}">Faça seu pedido</a>
-            <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">Fazer pedido</a> 
-            <a href="{% url 'login' %}" class="login-btn">Login</a>
-        </nav>
-    </header>
-    {% endblock %}
 {% block content %} 
 <div class="login-container">
     <h2>Entrar</h2>
