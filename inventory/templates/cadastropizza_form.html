@@ -22,9 +22,7 @@
             <a href="{% url 'localizacao' %}">Localização</a>
             <a href="{% url 'sobre' %}">Sobre</a>
             <a href="{% url 'cadastropizza' %}">Faça seu pedido</a>
-            <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">
-                🛒 Carrinho (<span id="contador-carrinho">0</span>)
-            </a>
+            <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">Fazer pedido</a> 
             {% if user.is_authenticated %}
             Olá, {{ user.username }}!
             <form action="{% url 'logout' %}" method="post" style="display:inline;">

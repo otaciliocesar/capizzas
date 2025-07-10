@@ -1,13 +1,15 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
-from capizzas_restaurant.models import Pizza, Cliente
+from capizzas_restaurant.models import Pizza, Cliente, Compra
 from django.shortcuts import render, get_object_or_404
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.contrib import messages
 from decimal import Decimal
-from .forms import PizzaForm, ClienteForm
-from django.contrib.auth.hashers import make_password, check_password
+from .forms import PizzaForm, ClienteForm, CompraForm
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth import authenticate, login
+from functools import wraps
 
 class HomePageView(TemplateView):    
     template_name = 'base.html'    
@@ -73,14 +75,6 @@ def pedidopizza(request):
     pizzas_json = json.dumps(list(pizzas), cls=DjangoJSONEncoder)
     return render(request, 'pedidopizza.html', {'pizzas_json': pizzas_json})
 
-
-def Carrinho(request):
-    return render(request, 'carrinho.html')
-
-def NovoPedido(request):
-    pizzas = Pizza.objects.all()
-    return render(request, 'carrinho_novo.html', {'pizzas': pizzas})
-
 def HomeData(request):
     pizzas = Pizza.objects.all().values('nome', 'ingredientes', 'preco')
     context = {
@@ -107,19 +101,45 @@ def login_cliente(request):
         email = request.POST.get('email')
         senha = request.POST.get('senha')
 
-        try:
-            cliente = Cliente.objects.get(email=email)
-            if check_password(senha, cliente.senha):
-                request.session['cliente_id'] = cliente.pk
-                request.session['cliente_nome'] = cliente.nome
-                return redirect('cardapio')
-            else:
-                messages.error(request, 'Senha incorreta.')
-        except Cliente.DoesNotExist:
-            messages.error(request, 'E-mail não encontrado.')
+        user = authenticate(request, username=email, password=senha)
+        if user is not None:
+            login(request, user)
+            return redirect('cardapio')  # Ou para onde você quiser
+        else:
+            messages.error(request, 'Email ou senha incorretos.')
 
     return render(request, 'login_cliente.html')
 
 def logout_cliente(request):
     request.session.flush()  # Remove todas as variáveis de sessão
     return redirect('base')  # Ou para onde quiser redirecionar após o logout
+
+
+def login_cliente_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f'/login_cliente/?next={request.path}')
+        # Aqui você pode adicionar lógica para verificar se é cliente mesmo
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+@login_cliente_required
+def carrinho_view(request):
+    cliente = request.user.cliente  # Assumindo que o cliente está logado
+    pizzas = Pizza.objects.all()
+
+    if request.method == 'POST':
+        form = CompraForm(request.POST)
+        if form.is_valid():
+            compra = form.save(commit=False)
+            compra.cliente = cliente
+            preco1 = compra.pizza_1.preco
+            preco2 = compra.pizza_2.preco if compra.pizza_2 else 0
+            compra.preco_final = max(preco1, preco2)
+            compra.save()
+            return redirect('pagina_de_sucesso')
+    else:
+        form = CompraForm()
+
+    return render(request, 'carrinho.html', {'form': form, 'pizzas': pizzas})
