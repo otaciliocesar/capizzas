@@ -1,12 +1,11 @@
 from django.views.generic import TemplateView
-from django.shortcuts import render, redirect
-from capizzas_restaurant.models import Pizza, Cliente, Compra
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
+from capizzas_restaurant.models import Pizza, Cliente, Compra, Bebida
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.contrib import messages
 from decimal import Decimal
-from .forms import PizzaForm, ClienteForm, CompraForm
+from .forms import PizzaForm, ClienteForm, CompraForm, BebidaForm
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login
 from functools import wraps
@@ -32,11 +31,13 @@ def Cardapio(request):
     pizzas = Pizza.objects.all()
     return render(request, 'cardapio.html', {'pizzas': pizzas})
 
+
 def cadastro_pizza(request):
     if not request.user.is_superuser:
         return redirect('base')  # ou uma mensagem de erro
 
-    if request.method == 'POST':
+    # Form pizza
+    if request.method == 'POST' and 'nome' in request.POST and 'ingredientes' in request.POST:
         form = PizzaForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
@@ -44,11 +45,61 @@ def cadastro_pizza(request):
     else:
         form = PizzaForm()
 
+    # Form bebida (não submete aqui)
+    bebida_form = BebidaForm()
+
     pizzas = Pizza.objects.all().order_by('nome')
-    return render(request, 'cadastropizza_form.html', {'form': form, 'pizzas': pizzas})
+    bebidas = Bebida.objects.all().order_by('nome')
+
+    context = {
+        'form': form,
+        'bebida_form': bebida_form,
+        'pizzas': pizzas,
+        'bebidas': bebidas,
+    }
+    return render(request, 'cadastropizza_form.html', context)
+
+
+def cadastrar_bebida(request):
+    if not request.user.is_superuser:
+        return redirect('base')
+
+    if request.method == 'POST':
+        form = BebidaForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('cadastropizza')
+    return redirect('cadastropizza')
+
+
+def editar_bebida(request, id):
+    if not request.user.is_superuser:
+        return redirect('base')
+
+    bebida = get_object_or_404(Bebida, id=id)
+    if request.method == 'POST':
+        form = BebidaForm(request.POST, request.FILES, instance=bebida)
+        if form.is_valid():
+            form.save()
+            return redirect('cadastropizza')
+    else:
+        form = BebidaForm(instance=bebida)
+    return render(request, 'editar_bebida.html', {'form': form})
+
+
+def excluir_bebida(request, id):
+    if not request.user.is_superuser:
+        return redirect('base')
+
+    bebida = get_object_or_404(Bebida, id=id)
+    bebida.delete()
+    return redirect('cadastropizza')
 
 
 def editar_pizza(request, id):
+    if not request.user.is_superuser:
+        return redirect('base')
+
     pizza = get_object_or_404(Pizza, id=id)
     if request.method == 'POST':
         form = PizzaForm(request.POST, request.FILES, instance=pizza)
@@ -58,7 +109,9 @@ def editar_pizza(request, id):
     else:
         form = PizzaForm(instance=pizza)
     pizzas = Pizza.objects.all()
-    return render(request, 'cadastropizza_form.html', {'form': form, 'pizzas': pizzas})
+    bebidas = Bebida.objects.all()
+    return render(request, 'cadastropizza_form.html', {'form': form, 'pizzas': pizzas, 'bebidas': bebidas})
+
 
 def excluir_pizza(request, pizza_id):
     if not request.user.is_superuser:
@@ -69,11 +122,11 @@ def excluir_pizza(request, pizza_id):
     return redirect('cadastropizza')
 
 
-        
 def pedidopizza(request):
     pizzas = Pizza.objects.all().values('nome', 'ingredientes', 'preco')
     pizzas_json = json.dumps(list(pizzas), cls=DjangoJSONEncoder)
     return render(request, 'pedidopizza.html', {'pizzas_json': pizzas_json})
+
 
 def HomeData(request):
     pizzas = Pizza.objects.all().values('nome', 'ingredientes', 'preco')
@@ -96,6 +149,7 @@ def cadastro_cliente(request):
     
     return render(request, 'cadastrocliente_form.html', {'form': form})
 
+
 def login_cliente(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -110,6 +164,7 @@ def login_cliente(request):
 
     return render(request, 'login_cliente.html')
 
+
 def logout_cliente(request):
     request.session.flush()  # Remove todas as variáveis de sessão
     return redirect('base')  # Ou para onde quiser redirecionar após o logout
@@ -123,6 +178,7 @@ def login_cliente_required(view_func):
         # Aqui você pode adicionar lógica para verificar se é cliente mesmo
         return view_func(request, *args, **kwargs)
     return _wrapped_view
+
 
 @login_cliente_required
 def carrinho_view(request):
