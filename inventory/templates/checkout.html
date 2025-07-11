@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load carrinho_filters %}
+
+{% block content %}
+<div class="checkout-container">
+  <h2>🧾 Confirmação do Pedido</h2>
+
+  <!-- DADOS DO CLIENTE -->
+  <div class="dados-cliente">
+    <h3>👤 Seus dados</h3>
+    <p><strong>Nome:</strong> {{ request.user.first_name }} {{ request.user.last_name }}</p>
+    <p><strong>Email:</strong> {{ request.user.email }}</p>
+    <p><strong>Endereço:</strong> {{ request.user.cliente.endereco_entrega }}, Nº {{ request.user.cliente.numero }}</p>
+  </div>
+
+  <!-- RESUMO DO CARRINHO -->
+  <div class="resumo-pedido">
+    <h3>📦 Itens do Pedido</h3>
+    <ul>
+      {% for item in carrinho %}
+        <li>
+          {% if item.tipo == 'pizza' %}
+            🍕 {{ item.pizza1.nome }}
+            {% if item.pizza2 %}+ {{ item.pizza2.nome }}{% endif %}
+            — <strong>R$ {{ item.total }}</strong>
+          {% elif item.tipo == 'bebida' %}
+            🥤 {{ item.bebida.nome }} x {{ item.quantidade }}
+            — <strong>R$ {{ item.total }}</strong>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+
+    <!-- TOTAL GERAL -->
+    <p class="total-final">
+      <strong>Total:</strong>
+      R$ {{ carrinho|calc_total }}
+    </p>
+  </div>
+
+  <!-- BOTÕES -->
+  <div class="botoes-final">
+    <form method="post" action="">
+      {% csrf_token %}
+      <input type="hidden" name="pedido_final" value='{{ carrinho|safe }}'>
+      <button type="submit" class="btn-confirmar">✅ Confirmar Pedido</button>
+      <a href="{% url 'carrinho' %}" class="btn-voltar">🔙 Voltar ao Carrinho</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
