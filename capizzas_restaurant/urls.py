@@ -24,7 +24,6 @@ urlpatterns = [
     path('bebida/cadastrar/', views.cadastrar_bebida, name='cadastrar_bebida'),
     path('bebida/editar/<int:id>/', views.editar_bebida, name='editar_bebida'),
     path('bebida/excluir/<int:id>/', views.excluir_bebida, name='excluir_bebida'),
-    path('checkout/', views.checkout_view, name='checkout'),
     path('cadastrocliente/', views.cadastro_cliente, name='cadastrocliente'),
     path('checkout/', views.checkout_view, name='checkout'),
     path('finalizar/', views.finalizar_pedido, name='finalizar_pedido'),
