@@ -1053,3 +1053,51 @@ justify-content: center;
   gap: 10px; /* espaço entre input e botão */
   margin-top: 0.5rem;
 }
+.checkout-container {
+  max-width: 700px;
+  margin: auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #ccc;
+}
+.checkout-container h2 {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+.dados-cliente, .resumo-pedido {
+  margin-bottom: 2rem;
+}
+.resumo-pedido ul {
+  list-style: none;
+  padding: 0;
+}
+.resumo-pedido li {
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  background: #f9f9f9;
+  border-left: 4px solid #28a745;
+}
+.total-final {
+  font-size: 1.2rem;
+  margin-top: 1rem;
+}
+.botoes-final {
+  text-align: center;
+}
+.btn-confirmar, .btn-voltar {
+  padding: 0.7rem 1.5rem;
+  margin: 0.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+}
+.btn-confirmar {
+  background-color: #28a745;
+  color: white;
+}
+.btn-voltar {
+  background-color: #ccc;
+  text-decoration: none;
+  color: #333;
+}

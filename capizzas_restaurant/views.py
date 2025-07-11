@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect, get_object_or_404
-from capizzas_restaurant.models import Pizza, Cliente, Compra, Bebida
+from capizzas_restaurant.models import Pizza, Compra, Bebida, CompraBebida
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.contrib import messages
@@ -9,6 +9,9 @@ from .forms import PizzaForm, ClienteForm, CompraForm, BebidaForm
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login
 from functools import wraps
+from django.views.decorators.http import require_http_methods, require_POST
+from django.utils.safestring import mark_safe
+from django.db import transaction
 
 class HomePageView(TemplateView):    
     template_name = 'base.html'    
@@ -175,7 +178,6 @@ def login_cliente_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect(f'/login_cliente/?next={request.path}')
-        # Aqui você pode adicionar lógica para verificar se é cliente mesmo
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
@@ -204,3 +206,71 @@ def carrinho_view(request):
         'pizzas': pizzas,
         'bebidas': bebidas  # <-- Adicionado no contexto
     })
+
+@login_cliente_required
+@require_http_methods(["GET", "POST"])
+def checkout_view(request):
+    if request.method == 'POST':
+        carrinho_json = request.POST.get("pedido_final")
+        if not carrinho_json:
+            messages.error(request, "Carrinho vazio ou inválido.")
+            return redirect("carrinho")
+
+        try:
+            carrinho = json.loads(carrinho_json)
+            request.session["carrinho"] = carrinho  # Armazena na sessão
+            return redirect("checkout")  # Redireciona para GET desta mesma view
+        except json.JSONDecodeError:
+            messages.error(request, "Erro ao processar o carrinho.")
+            return redirect("carrinho")
+
+    # GET: mostra o conteúdo salvo na sessão
+    carrinho = request.session.get("carrinho", [])
+    return render(request, "checkout.html", {"carrinho": carrinho})
+
+
+@login_cliente_required
+@require_POST
+def finalizar_pedido(request):
+    try:
+        cliente = request.user.cliente
+        carrinho = json.loads(request.POST.get('pedido_final', '[]'))
+
+        with transaction.atomic():
+            for item in carrinho:
+                if item['tipo'] == 'pizza':
+                    pizza1_id = item['pizza1']['id']
+                    pizza2_id = item['pizza2']['id'] if item.get('pizza2') else None
+                    preco_final = float(item['total'])
+
+                    compra = Compra.objects.create(
+                        cliente=cliente,
+                        pizza_1_id=pizza1_id,
+                        pizza_2_id=pizza2_id,
+                        preco_final=preco_final,
+                        quantidade=1  # Você pode expandir isso depois
+                    )
+
+                elif item['tipo'] == 'bebida':
+                    bebida_id = item['bebida']['id']
+                    quantidade = item['quantidade']
+
+                    # Criar um pedido "vazio" só com bebida (ou associar a uma compra existente)
+                    compra = Compra.objects.create(
+                        cliente=cliente,
+                        pizza_1=Pizza.objects.first(),  # Dummy para não quebrar a FK
+                        preco_final=float(item['total']),
+                        quantidade=1
+                    )
+                    CompraBebida.objects.create(
+                        compra=compra,
+                        bebida_id=bebida_id,
+                        quantidade=quantidade
+                    )
+
+        messages.success(request, "Pedido finalizado com sucesso!")
+        return redirect('cardapio')
+
+    except Exception as e:
+        messages.error(request, "Erro ao finalizar pedido.")
+        return redirect('checkout')

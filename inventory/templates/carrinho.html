@@ -45,7 +45,7 @@
        <div class="acoes-bebida">
   <input type="number" min="1" value="1" id="quantidade-{{ bebida.id }}" class="input-quantidade">
   <button onclick="adicionarBebidaAoPedido('{{ bebida.id }}', '{{ bebida.nome }}', '{{ bebida.preco }}')">Adicionar</button>
-</div>
+    </div>
 
       </div>
       {% endfor %}
@@ -58,11 +58,11 @@
       <h3>🧾 Resumo</h3>
       <ul id="resumo-sabores"></ul>
 
-      <form id="formPedido" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="pedido_final" id="pedido_final">
-        <button type="submit" class="btn-finalizar" style="background-color: green;">Finalizar Pedido</button>
-      </form>
+      <form id="formPedido" method="post" action="{% url 'checkout' %}">
+  {% csrf_token %}
+  <input type="hidden" name="pedido_final" id="pedido_final">
+  <button type="submit" class="btn-finalizar" style="background-color: green;">Finalizar Pedido</button>
+</form>
     </div>
   </div>
 </div>
