@@ -184,6 +184,7 @@ def login_cliente_required(view_func):
 def carrinho_view(request):
     cliente = request.user.cliente  # Assumindo que o cliente está logado
     pizzas = Pizza.objects.all()
+    bebidas = Bebida.objects.all()  # <-- Adicionado
 
     if request.method == 'POST':
         form = CompraForm(request.POST)
@@ -198,4 +199,8 @@ def carrinho_view(request):
     else:
         form = CompraForm()
 
-    return render(request, 'carrinho.html', {'form': form, 'pizzas': pizzas})
+    return render(request, 'carrinho.html', {
+        'form': form,
+        'pizzas': pizzas,
+        'bebidas': bebidas  # <-- Adicionado no contexto
+    })

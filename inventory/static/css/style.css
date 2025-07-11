@@ -953,3 +953,22 @@ footer .last-update {
 .btn-excluir:hover {
   color: #a00;
 }
+.card-bebida {
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin: 8px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 8px;
+  width: 150px;
+  display: inline-block;
+}
+
+.card-bebida:hover {
+  background-color: #f3f3f3;
+}
+
+.card-bebida.selecionada {
+  border: 2px solid green;
+  background-color: #e0ffe0;
+}
