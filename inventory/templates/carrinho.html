@@ -3,133 +3,164 @@
 
 {% block content %}
 
+<div class="etapa-container">
+  <h2>🍕 Escolha sua Pizza</h2>
 
-<div class="container mt-4">
-
-    <!-- Escolha de 1 ou 2 sabores -->
-<div class="escolha-e-filtro">
-
-  <div class="centralizar-escolha mb-4">
-    <h3 class="mb-3">🍕 Qual tipo de pizza você deseja?</h3>
-
-    <div class="btn-group btn-sabores">
-      <button class="btn btn-primary" onclick="definirQuantidadeSabores(1)">1 Sabor</button>
-      <button class="btn btn-success" onclick="definirQuantidadeSabores(2)">2 Sabores</button>
+  <!-- Etapa 1: Escolha de Sabores -->
+  <div class="etapa" id="etapa1">
+    <p>Quantos sabores você deseja?</p>
+    <div class="botoes-sabores">
+      <button class="btn-sabor" onclick="escolherSabores(1)">1 Sabor</button>
+      <button class="btn-sabor" onclick="escolherSabores(2)">2 Sabores</button>
     </div>
   </div>
 
-  <div id="filtro-container" class="text-center" style="display:none;">
-    <input type="text" id="filtro-pizza" placeholder="Buscar pizza..." class="filtro-input" onkeyup="filtrarPizzas()">
+  <!-- Etapa 2: Filtro de Pizzas -->
+  <div class="etapa" id="etapa2" style="display: none;">
+    <input type="text" id="campoFiltro" placeholder="🔍 Buscar pizza..." onkeyup="filtrarPizzas()">
   </div>
 
-</div>
-    <!-- Layout principal -->
-    <div class="row">
-        <!-- Resumo do pedido -->
-        <div class="col-md-4" id="resumo-container" style="display: none;">
-            <div class="card p-3">
-                <h4 class="mb-3">🧾 Resumo do Pedido</h4>
-                <ul class="list-group mb-3">
-                    <li class="list-group-item">Sabor 1: <span id="resumo-sabor1">—</span></li>
-                    <li class="list-group-item">Sabor 2: <span id="resumo-sabor2">—</span></li>
-                    <li class="list-group-item"><strong>Total: R$ <span id="resumo-total">0.00</span></strong></li>
-                </ul>
-                <form method="post">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <button type="submit" class="btn btn-success w-100">Finalizar Pedido</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Lista de pizzas -->
-        <div class="col-md-8">
-            <div class="row" id="lista-pizzas" style="display: none;">
-                {% for pizza in pizzas %}
-                <div class="col-md-6 mb-4 pizza-item">
-                    <div class="card h-100 pizza-card" onclick="selecionarPizza('{{ pizza.id }}', '{{ pizza.nome }}', '{{ pizza.preco }}', this)">
-                        <img src="{{ pizza.imagem.url }}" class="card-img-top" alt="{{ pizza.nome }}">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ pizza.nome }}</h5>
-                            <p class="card-text text-muted">{{ pizza.ingredientes }}</p>
-                            <p class="card-text"><strong>R$ {{ pizza.preco }}</strong></p>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+  <!-- Etapa 3: Lista de Pizzas -->
+  <div class="etapa" id="etapa3" style="display: none;">
+    <div class="grade-pizzas">
+      {% for pizza in pizzas %}
+      <div class="card-pizza" onclick="selecionarPizza('{{ pizza.id }}', '{{ pizza.nome }}', '{{ pizza.preco }}', this)">
+        <img src="{{ pizza.imagem.url }}" alt="{{ pizza.nome }}">
+        <h4>{{ pizza.nome }}</h4>
+        <p>{{ pizza.ingredientes }}</p>
+        <span class="preco">R$ {{ pizza.preco }}</span>
+      </div>
+      {% endfor %}
     </div>
+  </div>
+
+  <!-- Etapa 4: Resumo do Pedido -->
+  <div class="etapa" id="etapa4" style="display: none;">
+    <div class="resumo">
+      <h3>🧾 Resumo</h3>
+      <ul id="resumo-sabores"></ul>
+
+      <div class="botoes-resumo">
+        <button type="button" class="btn-finalizar" onclick="adicionarAoPedido()">➕ Adicionar ao Pedido</button>
+        <form method="post" style="display: inline;">
+          {% csrf_token %}
+          <input type="hidden" name="pedido_final" id="pedido_final">
+          <button type="submit" class="btn-finalizar" style="background-color: green;">Finalizar Pedido</button>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-let modo = 1; // 1 sabor ou 2 sabores
-let pizzaSelecionada1 = null;
-let pizzaSelecionada2 = null;
+let modo = 1;
+let pizza1 = null;
+let pizza2 = null;
+let carrinho = [];
 
-function definirQuantidadeSabores(qtd) {
-    modo = qtd;
-    document.getElementById('filtro-container').style.display = 'block';
-    document.getElementById('lista-pizzas').style.display = 'flex';
-    document.getElementById('resumo-container').style.display = 'block';
-    resetResumo();
-}
-
-function selecionarPizza(id, nome, preco, el) {
-    if (modo === 1) {
-        pizzaSelecionada1 = {id, nome, preco};
-        pizzaSelecionada2 = null;
-    } else {
-        if (!pizzaSelecionada1) {
-            pizzaSelecionada1 = {id, nome, preco};
-        } else if (!pizzaSelecionada2 && pizzaSelecionada1.id !== id) {
-            pizzaSelecionada2 = {id, nome, preco};
-        } else {
-            pizzaSelecionada1 = {id, nome, preco};
-            pizzaSelecionada2 = null;
-        }
-    }
-
-    // Atualiza inputs hidden do form
-    document.querySelector('#id_pizza_1').value = pizzaSelecionada1 ? pizzaSelecionada1.id : '';
-    document.querySelector('#id_pizza_2').value = pizzaSelecionada2 ? pizzaSelecionada2.id : '';
-
-    // Atualiza resumo
-    document.getElementById('resumo-sabor1').textContent = pizzaSelecionada1 ? pizzaSelecionada1.nome : '—';
-    document.getElementById('resumo-sabor2').textContent = pizzaSelecionada2 ? pizzaSelecionada2.nome : '—';
-
-    let preco1 = pizzaSelecionada1 ? parseFloat(pizzaSelecionada1.preco) : 0;
-    let preco2 = pizzaSelecionada2 ? parseFloat(pizzaSelecionada2.preco) : 0;
-    let total = modo === 2 ? Math.max(preco1, preco2) : preco1;
-    document.getElementById('resumo-total').textContent = total.toFixed(2);
-
-    // Marcar visualmente
-    document.querySelectorAll('.pizza-card').forEach(card => card.classList.remove('selecionada'));
-    if (pizzaSelecionada1) {
-        let card1 = document.querySelector(`[onclick*="'${pizzaSelecionada1.id}'"]`);
-        if (card1) card1.classList.add('selecionada');
-    }
-    if (pizzaSelecionada2) {
-        let card2 = document.querySelector(`[onclick*="'${pizzaSelecionada2.id}'"]`);
-        if (card2) card2.classList.add('selecionada');
-    }
+function escolherSabores(qtd) {
+  modo = qtd;
+  document.getElementById("etapa2").style.display = "block";
+  document.getElementById("etapa3").style.display = "block";
+  document.getElementById("etapa4").style.display = "block";
+  pizza1 = null;
+  pizza2 = null;
+  atualizarResumo();
 }
 
 function filtrarPizzas() {
-    let filtro = document.getElementById("filtro-pizza").value.toLowerCase();
-    let pizzas = document.getElementsByClassName("pizza-item");
-    for (let i = 0; i < pizzas.length; i++) {
-        let texto = pizzas[i].textContent || pizzas[i].innerText;
-        pizzas[i].style.display = texto.toLowerCase().includes(filtro) ? "" : "none";
-    }
+  const filtro = document.getElementById("campoFiltro").value.toLowerCase();
+  document.querySelectorAll(".card-pizza").forEach(card => {
+    card.style.display = card.innerText.toLowerCase().includes(filtro) ? "" : "none";
+  });
 }
 
-function resetResumo() {
-    pizzaSelecionada1 = null;
-    pizzaSelecionada2 = null;
-    document.getElementById('resumo-sabor1').textContent = '—';
-    document.getElementById('resumo-sabor2').textContent = '—';
-    document.getElementById('resumo-total').textContent = '0.00';
+function selecionarPizza(id, nome, preco, el) {
+  if (modo === 1) {
+    pizza1 = { id, nome, preco };
+    pizza2 = null;
+  } else {
+    if (!pizza1 || pizza1.id === id) {
+      pizza1 = { id, nome, preco };
+    } else {
+      pizza2 = { id, nome, preco };
+    }
+  }
+  atualizarResumo();
+  atualizarSelecaoVisual();
 }
+
+function atualizarResumo() {
+  const resumo = document.getElementById("resumo-sabores");
+  resumo.innerHTML = '';
+
+  // Exibe os itens já adicionados ao carrinho
+  carrinho.forEach((item, index) => {
+    let texto = item.pizza2
+      ? `🍕 ${item.pizza1.nome} + ${item.pizza2.nome} — <strong>R$ ${item.total}</strong>`
+      : `🍕 ${item.pizza1.nome} — <strong>R$ ${item.total}</strong>`;
+
+    resumo.innerHTML += `
+      <li>
+        ${texto}
+        <button class="btn-excluir" onclick="removerDoPedido(${index})" title="Excluir item">❌</button>
+      </li>`;
+  });
+
+  // Exibe pizza atual em seleção
+  if (pizza1) {
+    let selecionando = modo === 2 && pizza2
+      ? `🍕 ${pizza1.nome} + ${pizza2.nome}`
+      : `🍕 ${pizza1.nome}`;
+    resumo.innerHTML += `<li style="color: #888;">Selecionando: ${selecionando}</li>`;
+  }
+}
+
+function removerDoPedido(index) {
+  carrinho.splice(index, 1);
+  atualizarResumo();
+}
+
+function atualizarSelecaoVisual() {
+  document.querySelectorAll('.card-pizza').forEach(card => card.classList.remove('selecionada'));
+  [pizza1, pizza2].forEach(p => {
+    if (p) {
+      let card = document.querySelector(`[onclick*="'${p.id}'"]`);
+      if (card) card.classList.add('selecionada');
+    }
+  });
+}
+
+function adicionarAoPedido() {
+  if (!pizza1) {
+    alert("Selecione pelo menos 1 sabor.");
+    return;
+  }
+
+  const preco1 = parseFloat(pizza1.preco);
+  const preco2 = pizza2 ? parseFloat(pizza2.preco) : 0;
+  const total = modo === 2 ? Math.max(preco1, preco2) : preco1;
+
+  carrinho.push({
+    pizza1,
+    pizza2,
+    total: total.toFixed(2)
+  });
+
+  pizza1 = null;
+  pizza2 = null;
+  atualizarResumo();
+  atualizarSelecaoVisual();
+
+  // Reset para nova escolha
+  document.getElementById("campoFiltro").value = "";
+  filtrarPizzas();
+  document.getElementById("etapa2").style.display = "none";
+  document.getElementById("etapa3").style.display = "none";
+}
+
+document.querySelector("form").addEventListener("submit", function(e) {
+  document.getElementById("pedido_final").value = JSON.stringify(carrinho);
+});
 </script>
 {% endblock %}
