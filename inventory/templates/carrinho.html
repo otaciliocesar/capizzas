@@ -42,8 +42,11 @@
         <img src="{{ bebida.imagem.url }}" alt="{{ bebida.nome }}" style="max-height: 100px;">
         <h5>{{ bebida.nome }}</h5>
         <span class="preco">R$ {{ bebida.preco }}</span>
-        <input type="number" min="1" value="1" id="quantidade-{{ bebida.id }}" style="width: 50px;">
-        <button onclick="adicionarBebidaAoPedido('{{ bebida.id }}', '{{ bebida.nome }}', '{{ bebida.preco }}')">Adicionar</button>
+       <div class="acoes-bebida">
+  <input type="number" min="1" value="1" id="quantidade-{{ bebida.id }}" class="input-quantidade">
+  <button onclick="adicionarBebidaAoPedido('{{ bebida.id }}', '{{ bebida.nome }}', '{{ bebida.preco }}')">Adicionar</button>
+</div>
+
       </div>
       {% endfor %}
     </div>
@@ -89,6 +92,20 @@ function filtrarPizzas() {
 }
 
 function selecionarPizza(id, nome, preco) {
+  // Remove a classe 'selecionada' de todos os cards
+  document.querySelectorAll(".card-pizza").forEach(card => {
+    card.classList.remove("selecionada");
+  });
+
+  // Marca a pizza selecionada
+  const cards = document.querySelectorAll(".card-pizza");
+  cards.forEach(card => {
+    if (card.innerText.includes(nome)) {
+      card.classList.add("selecionada");
+    }
+  });
+
+  // Define pizza1 e pizza2 conforme o modo (inteira ou meio a meio)
   if (modo === 1) {
     pizza1 = { id, nome, preco };
     pizza2 = null;
@@ -98,7 +115,17 @@ function selecionarPizza(id, nome, preco) {
     } else {
       pizza2 = { id, nome, preco };
     }
+
+    // Marca visualmente ambas as pizzas meio a meio
+    if (pizza1 && pizza2) {
+      cards.forEach(card => {
+        if (card.innerText.includes(pizza1.nome) || card.innerText.includes(pizza2.nome)) {
+          card.classList.add("selecionada");
+        }
+      });
+    }
   }
+
   atualizarResumo();
 }
 
@@ -147,6 +174,22 @@ function atualizarResumo() {
   const resumo = document.getElementById("resumo-sabores");
   resumo.innerHTML = '';
 
+  // PRÉVIA DA PIZZA SELECIONADA
+  if (pizza1) {
+    let textoPizza = "";
+    if (modo === 1 || !pizza2) {
+      textoPizza = `🍕 <strong>${pizza1.nome}</strong>`;
+    } else {
+      textoPizza = `🍕 <strong>${pizza1.nome}</strong> + <strong>${pizza2.nome}</strong>`;
+    }
+
+    resumo.innerHTML += `
+      <li style="background:#e6f9e6; border-left: 4px solid #28a745;">
+        ${textoPizza} <em>(Pré-seleção)</em>
+      </li>`;
+  }
+
+  // LISTA DE ITENS DO CARRINHO
   carrinho.forEach((item, index) => {
     let texto = "";
     if (item.tipo === 'pizza') {
@@ -156,6 +199,7 @@ function atualizarResumo() {
     } else {
       texto = `🥤 ${item.bebida.nome} x ${item.quantidade}`;
     }
+
     resumo.innerHTML += `
       <li>
         ${texto} — <strong>R$ ${item.total}</strong>
