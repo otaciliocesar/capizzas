@@ -1,6 +1,6 @@
 from django import forms  
 from django.contrib.auth.models import User  
-from .models import Pizza, Cliente, Compra
+from .models import Pizza, Cliente, Compra, Bebida
 
 class PizzaForm(forms.ModelForm):
     class Meta:
@@ -51,3 +51,8 @@ class CompraForm(forms.ModelForm):
             'pizza_2': forms.Select(attrs={'class': 'form-control'}),
             'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
         }        
+
+class BebidaForm(forms.ModelForm):
+    class Meta:
+        model = Bebida
+        fields = '__all__'

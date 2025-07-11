@@ -21,5 +21,8 @@ urlpatterns = [
     path('cadastropizza/add/', views.cadastro_pizza, name='cadastropizza'),
     path('cadastropizza/<int:id>/editar/', views.editar_pizza, name='editar_pizza'),
     path('cadastropizza/excluir/<int:pizza_id>/', views.excluir_pizza, name='excluir_pizza'),
+    path('bebida/cadastrar/', views.cadastrar_bebida, name='cadastrar_bebida'),
+    path('bebida/editar/<int:id>/', views.editar_bebida, name='editar_bebida'),
+    path('bebida/excluir/<int:id>/', views.excluir_bebida, name='excluir_bebida'),
     path('cadastrocliente/', views.cadastro_cliente, name='cadastrocliente'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
