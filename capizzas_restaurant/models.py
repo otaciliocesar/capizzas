@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.utils.text import slugify
 
 class Cliente(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -53,15 +54,24 @@ class CompraBebida(models.Model):
     def __str__(self):
         return f"{self.quantidade}x {self.bebida.nome} (Pedido #{self.compra.id})"
     
-
-
+    
 class Promocao(models.Model):
     titulo = models.CharField(max_length=100)
-    descricao = models.TextField(blank=True)
-    imagem = models.ImageField(upload_to='promocoes/')
+    descricao = models.TextField()
+    preco = models.DecimalField(max_digits=6, decimal_places=2)
+    imagem = models.ImageField(upload_to='promocoes/', blank=True, null=True)
     pizzas = models.ManyToManyField(Pizza, related_name='promocoes')
-    bebidas = models.ManyToManyField(Bebida, related_name='promocoes', blank=True)
+    bebidas = models.ManyToManyField(Bebida, blank=True, related_name='promocoes')
     ativa = models.BooleanField(default=True)
+    slug = models.SlugField(unique=True, blank=True)  # ← AQUI
 
-    def __str__(self):
-        return self.titulo
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.titulo)
+            slug = base_slug
+            counter = 1
+            while Promocao.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)

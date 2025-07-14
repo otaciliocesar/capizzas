@@ -39,12 +39,5 @@ document.getElementById("busca").addEventListener("keyup", function () {
         }
     });
 });
-
-document.querySelectorAll(".pizza-card").forEach(card => {
-    card.addEventListener("click", function () {
-        const nome = this.dataset.nome;
-        window.location.href = `/carrinho/novo/?pizza_inicial=${encodeURIComponent(nome)}`;
-    });
-});
 </script>
 {% endblock %}

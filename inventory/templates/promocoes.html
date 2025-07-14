@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Promoções - Capizzas{% endblock %}
+
+{% block content %}
+<div class="busca-container">
+    <input type="text" id="busca-promocao" placeholder="Buscar promoção...">
+</div>
+
+<div class="cardapio-grid" id="lista-promocoes">
+    {% for promocao in promocoes %}
+    <div class="pizza-card" data-slug="{{ promocao.slug }}">
+        {% if promocao.imagem %}
+        <img src="{{ promocao.imagem.url }}" alt="{{ promocao.nome }}">
+        {% else %}
+        <img src="{% static 'img/promocao_default.jpg' %}" alt="Promoção sem imagem">
+        {% endif %}
+        <h3 class="pizza-nome">{{ promocao.nome }}</h3>
+        <p class="pizza-ingredientes">{{ promocao.descricao }}</p>
+        <div class="preco">R$ {{ promocao.preco }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+document.getElementById("busca-promocao").addEventListener("keyup", function () {
+    const termo = this.value.toLowerCase();
+    const promocoes = document.querySelectorAll(".pizza-card");
+
+    promocoes.forEach(function (card) {
+        const nome = card.querySelector(".pizza-nome").textContent.toLowerCase();
+        const desc = card.querySelector(".pizza-ingredientes").textContent.toLowerCase();
+
+        if (nome.includes(termo) || desc.includes(termo)) {
+            card.style.display = "block";
+        } else {
+            card.style.display = "none";
+        }
+    });
+});
+
+document.querySelectorAll(".pizza-card").forEach(card => {
+    card.addEventListener("click", function () {
+        const slug = this.dataset.slug;
+        window.location.href = `/promocao/${slug}/`;
+    });
+})
+</script>
+{% endblock %}

@@ -61,8 +61,9 @@ class BebidaForm(forms.ModelForm):
 class PromocaoForm(forms.ModelForm):
     class Meta:
         model = Promocao
-        fields = ['titulo', 'descricao', 'imagem', 'pizzas', 'bebidas', 'ativa']
+        fields = ['titulo', 'descricao', 'preco', 'imagem', 'pizzas', 'bebidas', 'ativa']
         widgets = {
             'pizzas': forms.CheckboxSelectMultiple,
-            'bebidas': forms.CheckboxSelectMultiple
+            'bebidas': forms.CheckboxSelectMultiple,
+            'preco': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }

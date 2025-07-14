@@ -36,7 +36,10 @@
         {{ form.bebidas }}
       </div>
     </div>
-
+    <div class="form-group">
+        {{ form.preco.label_tag }}<br>
+        {{ form.preco }}
+    </div>
     <div class="form-group">
       {{ form.ativa }} {{ form.ativa.label_tag }}
     </div>
@@ -66,8 +69,6 @@
             {{ promo.bebidas.all|join:", " }}
           </p>
         {% endif %}
-
-        <a href="{% url 'pedido_promocao' promo.id %}" class="btn-editar" style="margin-top: 10px; display: inline-block;">👁 Visualizar como cliente</a>
 
         <form method="post" action="{% url 'excluir_promocao' promo.id %}" style="display:inline-block; margin-left: 10px;">
           {% csrf_token %}

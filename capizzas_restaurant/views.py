@@ -147,7 +147,7 @@ def cadastro_cliente(request):
             cliente = form.save(commit=False)
             cliente.senha = make_password(form.cleaned_data['senha'])  # <- Aqui criptografa a senha
             cliente.save()
-            return redirect('login_cliente')  # redireciona para login após cadastro
+            return redirect('login')  # redireciona para login após cadastro
     else:
         form = ClienteForm()
     
@@ -320,3 +320,11 @@ def excluir_promocao(request, id):
     promocao.delete()
     messages.success(request, "Promoção excluída com sucesso.")
     return redirect('gerenciar_promocoes')
+
+def promocoes_view(request):
+    promocoes = Promocao.objects.all()
+    return render(request, "promocoes.html", {"promocoes": promocoes})
+
+def promocao_detalhe_view(request, slug):
+    promocao = get_object_or_404(Promocao, slug=slug, ativa=True)
+    return render(request, "pedido_promocao.html", {"promocao": promocao})
