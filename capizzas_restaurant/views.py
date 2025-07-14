@@ -5,17 +5,15 @@ from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.contrib import messages
 from decimal import Decimal
-from .forms import PizzaForm, ClienteForm, CompraForm, BebidaForm
+from .forms import PizzaForm, ClienteForm, CompraForm, BebidaForm, PromocaoForm
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login
 from functools import wraps
 from django.views.decorators.http import require_http_methods, require_POST
 from django.utils.safestring import mark_safe
 from django.db import transaction
-
-class HomePageView(TemplateView):    
-    template_name = 'base.html'    
-    context_object_name = 'base'
+from .models import Promocao
+  
 
 class SobrePageView(TemplateView):
     template_name = 'sobre.html'
@@ -29,6 +27,9 @@ class LoginPageView(TemplateView):
     template_name = 'login.html'
     context_object_name = 'login'
 
+def Home_View(request):
+    promocoes = Promocao.objects.filter(ativa=True)
+    return render(request, 'home.html', {'promocoes': promocoes})
 
 def Cardapio(request):
     pizzas = Pizza.objects.all()
@@ -274,3 +275,48 @@ def finalizar_pedido(request):
     except Exception as e:
         messages.error(request, "Erro ao finalizar pedido.")
         return redirect('checkout')
+    
+
+@login_cliente_required
+def gerenciar_promocoes(request):
+    if not request.user.is_superuser:
+        return redirect('base')
+
+    if request.method == 'POST':
+        form = PromocaoForm(request.POST, request.FILES)
+        if form.is_valid():
+            promocao = form.save(commit=False)
+            promocao.save()
+            form.save_m2m()  # Agora funciona corretamente!
+            return redirect('gerenciar_promocoes')
+    else:
+        form = PromocaoForm()
+
+    promocoes = Promocao.objects.filter(ativa=True)  # Exibe apenas promoções ativas
+    return render(request, 'gerenciar_promocoes.html', {
+        'form': form,
+        'promocoes': promocoes
+    })
+
+@login_cliente_required
+def pedido_promocao(request, promo_id):
+    promocao = get_object_or_404(Promocao, id=promo_id, ativa=True)
+    bebidas = Bebida.objects.all()
+    pizzas = promocao.pizzas.all()
+
+    return render(request, 'pedido_promocao.html', {
+        'promocao': promocao,
+        'pizzas': pizzas,
+        'bebidas': bebidas,
+    })
+
+@login_cliente_required
+@require_POST
+def excluir_promocao(request, id):
+    if not request.user.is_superuser:
+        return redirect('base')
+
+    promocao = get_object_or_404(Promocao, id=id)
+    promocao.delete()
+    messages.success(request, "Promoção excluída com sucesso.")
+    return redirect('gerenciar_promocoes')

@@ -52,3 +52,16 @@ class CompraBebida(models.Model):
 
     def __str__(self):
         return f"{self.quantidade}x {self.bebida.nome} (Pedido #{self.compra.id})"
+    
+
+
+class Promocao(models.Model):
+    titulo = models.CharField(max_length=100)
+    descricao = models.TextField(blank=True)
+    imagem = models.ImageField(upload_to='promocoes/')
+    pizzas = models.ManyToManyField(Pizza, related_name='promocoes')
+    bebidas = models.ManyToManyField(Bebida, related_name='promocoes', blank=True)
+    ativa = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.titulo

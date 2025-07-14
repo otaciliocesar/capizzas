@@ -1101,3 +1101,163 @@ justify-content: center;
   text-decoration: none;
   color: #333;
 }
+
+/* ----------- REGISTRO DE PROMOÇÃO ----------- */
+.promocao-container {
+    max-width: 600px;
+    margin: 60px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e0e0e0;
+    justify-content: center;
+}
+
+.promocao-container h2 {
+    text-align: center;
+    color: #2eb144;
+    margin-bottom: 25px;
+    font-size: 2em;
+}
+
+.promocao-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.promocao-container form input,
+.promocao-container form select,
+.promocao-container form textarea {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1em;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.promocao-container form button {
+    background-color: #ff5722;
+    color: white;
+    padding: 14px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.promocao-container form button:hover {
+    background-color: #e64a19;
+    transform: translateY(-2px);
+}
+
+.promocao-container form button:active {
+    transform: translateY(0);
+}
+
+/* Erros de validação */
+.promocao-container p.error {
+    color: #d32f2f;
+    background-color: #ffebee;
+    border: 1px solid #ef9a9a;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 0.95em;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+    .promocao-container {
+        margin: 30px 15px;
+        padding: 25px;
+    }
+
+    .promocao-container h2 {
+        font-size: 1.8em;
+    }
+
+    .promocao-container form button {
+        font-size: 1em;
+        padding: 12px 20px;
+    }
+}
+
+.btn-deletar {
+  background-color: #e74c3c;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-deletar:hover {
+  background-color: #c0392b;
+}
+
+
+.card-bebida, .card-pizza {
+  cursor: pointer;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px;
+  text-align: center;
+  transition: background-color 0.3s, border-color 0.3s;
+  user-select: none;
+}
+.card-bebida img, .card-pizza img {
+  max-width: 100px;
+  display: block;
+  margin: 0 auto 8px;
+}
+.card-pizza.selecionada, .card-bebida.selecionada {
+  border-color: #328d52;
+  background-color: #e6f7ed;
+}
+.grade-pizzas, .grade-bebidas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+#carouselPromo {
+  max-width: 1560px;
+  height: 600px;
+  margin: 40px auto;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+/* Estilo das imagens dentro do carrossel */
+#carouselPromo .carousel-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+/* ✅ RESPONSIVIDADE: ajusta o carrossel em telas pequenas */
+@media (max-width: 768px) {
+  #carouselPromo {
+    height: 300px;
+    width: 95%;
+  }
+
+  #carouselPromo .carousel-item img {
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .carousel-caption {
+    font-size: 0.9rem;
+  }
+}

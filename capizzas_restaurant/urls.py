@@ -1,19 +1,21 @@
-from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 from . import views
-from . views import HomePageView, SobrePageView, LocalizacaoPageView
+from . views import SobrePageView, LocalizacaoPageView
 from django.contrib.auth.views import LoginView, LogoutView
 
 app = 'capizzas_restaurant'
 
 urlpatterns = [
-    path('', HomePageView.as_view(), name='base'),
+    path('', views.Home_View, name='home'),
     path('sobre/', SobrePageView.as_view(), name='sobre'),
     path('localizacao/', LocalizacaoPageView.as_view(), name='localizacao'),
     path('cardapio/', views.Cardapio, name='cardapio'),
     path('carrinho/', views.carrinho_view, name='carrinho'),
+    path('gerenciar_promocoes/', views.gerenciar_promocoes, name='gerenciar_promocoes'),
+    path('promocao/excluir/<int:id>/', views.excluir_promocao, name='excluir_promocao'),
+    path('promocao/<int:promo_id>/', views.pedido_promocao, name='pedido_promocao'),
     path('login/', LoginView.as_view(template_name='login.html'), name='login'),
     path('login_cliente/', views.login_cliente, name='login_cliente'),
     path('logout_cliente/', views.logout_cliente, name='logout_cliente'),

@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="promocao-container">
+  <h2>🍕 Promoção: {{ promocao.titulo }}</h2>
+  <p>{{ promocao.descricao }}</p>
+
+  <!-- Imagem da promoção -->
+  <img src="{{ promocao.imagem.url }}" alt="{{ promocao.titulo }}" style="max-width: 100%; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+
+  <h3>Escolha um sabor para sua pizza:</h3>
+
+  <div class="grade-pizzas">
+    {% for pizza in promocao.pizzas.all %}
+    <div class="card-pizza" onclick="selecionarPizza('{{ pizza.id }}', '{{ pizza.nome }}', '{{ pizza.preco }}', this)">
+      <img src="{{ pizza.imagem.url }}" alt="{{ pizza.nome }}">
+      <h4>{{ pizza.nome }}</h4>
+      <p>{{ pizza.ingredientes }}</p>
+      <span class="preco">R$ {{ pizza.preco }}</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if promocao.bebidas.exists %}
+  <h3>Selecione bebidas para acompanhar:</h3>
+  <div class="grade-bebidas">
+    {% for bebida in promocao.bebidas.all %}
+    <div class="card-bebida" onclick="toggleBebidaSelecionada('{{ bebida.id }}', '{{ bebida.nome }}', '{{ bebida.preco }}', this)">
+      <img src="{{ bebida.imagem.url }}" alt="{{ bebida.nome }}">
+      <span>{{ bebida.nome }} - R$ {{ bebida.preco }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Formulário para enviar promoção ao carrinho -->
+  <form method="post" action="{% url 'checkout' %}">
+    {% csrf_token %}
+    <input type="hidden" name="pedido_final" id="pedido_final">
+    <button type="submit" class="btn-finalizar" onclick="enviarPedido()">🛒 Escolher essa promoção</button>
+  </form>
+</div>
+
+
+
+<script>
+let pizzaSelecionada = null;
+let bebidasSelecionadas = [];
+
+function selecionarPizza(id, nome, preco, element) {
+  pizzaSelecionada = {
+    tipo: 'pizza',
+    pizza1: { id: id, nome: nome, preco: preco },
+    pizza2: null,
+    total: preco
+  };
+
+  document.querySelectorAll('.card-pizza').forEach(card => card.classList.remove('selecionada'));
+  element.classList.add('selecionada');
+}
+
+function toggleBebidaSelecionada(id, nome, preco, element) {
+  const index = bebidasSelecionadas.findIndex(b => b.bebida.id === id);
+
+  if (index === -1) {
+    // adiciona bebida
+    bebidasSelecionadas.push({
+      tipo: 'bebida',
+      bebida: { id: id, nome: nome, preco: preco },
+      quantidade: 1,
+      total: preco
+    });
+    element.classList.add('selecionada');
+  } else {
+    // remove bebida
+    bebidasSelecionadas.splice(index, 1);
+    element.classList.remove('selecionada');
+  }
+}
+
+function enviarPedido() {
+  event.preventDefault();
+
+  if (!pizzaSelecionada) {
+    alert("Selecione uma pizza antes de continuar.");
+    return false;
+  }
+
+  const pedidoFinal = [pizzaSelecionada, ...bebidasSelecionadas];
+  document.getElementById("pedido_final").value = JSON.stringify(pedidoFinal);
+
+  event.target.form.submit();
+}
+</script>
+{% endblock %}

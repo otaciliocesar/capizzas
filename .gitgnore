@@ -14,3 +14,6 @@ db.sqlite3
 # Arquivos do sistema
 .DS_Store
 Thumbs.db
+
+# Arquivos de midia
+media/
