@@ -258,12 +258,6 @@ def checkout_view(request):
             destinatario = request.user.email
             texto = f"Olá {cliente.nome}, recebemos seu pedido! Total: R$ {total:.2f}"
 
-            # Import da sua função de utils/email.py
-            from utils.email import enviar_email
-            print("ENVIANDO EMAIL...")
-            enviar_email(destinatario, assunto, texto, html_email)
-            response = enviar_email(destinatario, assunto, texto, html_email)
-            print("MailerSend response:", response)
 
             messages.success(request, "Pedido confirmado! Confirmação enviada por e-mail.")
             return redirect("checkout")  # Ou para outra página após confirmação
@@ -282,10 +276,19 @@ def checkout_view(request):
 @login_cliente_required
 @require_POST
 def finalizar_pedido(request):
-    try:
-        cliente = request.user.cliente
-        carrinho = json.loads(request.POST.get('pedido_final', '[]'))
+    print("📬 View finalizar_pedido foi chamada")
 
+    cliente = request.user.cliente
+    carrinho_str = request.POST.get('pedido_final', '[]')
+
+    try:
+        carrinho = json.loads(carrinho_str)
+    except json.JSONDecodeError as e:
+        print(f"❌ Erro de JSON: {e}")
+        messages.error(request, "Erro no formato do pedido. Tente novamente.")
+        return redirect('checkout')
+
+    try:
         with transaction.atomic():
             for item in carrinho:
                 if item['tipo'] == 'pizza':
@@ -317,32 +320,45 @@ def finalizar_pedido(request):
                         quantidade=quantidade
                     )
 
-        # Enviar e-mail após o pedido
-        context = {
-            "cliente": cliente,
-            "carrinho": carrinho,
-            "total": sum(float(item["total"]) for item in carrinho)
-        }
+        # Enviar e-mail
+        from utils.email import enviar_email
 
-        # Renderiza corpo do e-mail HTML
-        html_content = render_to_string("emails/email_confirmacao.html", context)
+        itens_html = "".join([
+            f"<li>🍕 {item['pizza1']['nome']}" +
+            (f" + {item['pizza2']['nome']}" if item.get('pizza2') else "") +
+            f" — <strong>R$ {item['total']}</strong></li>"
+            if item['tipo'] == 'pizza' else
+            f"<li>🥤 {item['bebida']['nome']} x {item['quantidade']} — <strong>R$ {item['total']}</strong></li>"
+            for item in carrinho
+        ])
+        total = sum(float(item["total"]) for item in carrinho)
 
-        # Envia para cliente e dono da pizzaria
-        send_mail(
-            subject="Confirmação do seu pedido - Capizzas 🍕",
-            message="Resumo do pedido disponível em HTML.",  # corpo alternativo
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[request.user.email, "contato@sua-pizzaria.com"],  # <-- altere aqui
-            html_message=html_content,
-            fail_silently=False,
-        )
+        html_email = f"""
+            <h2>🍕 Confirmação de Pedido - Capizzas</h2>
+            <p>Olá {cliente.nome},</p>
+            <p>Recebemos seu pedido com sucesso! Aqui está o resumo:</p>
+            <ul>{itens_html}</ul>
+            <p><strong>Total do pedido:</strong> R$ {total:.2f}</p>
+            <p>🛵 Em breve estaremos chegando com sua pizza quente e saborosa!</p>
+            <hr>
+            <p>📍 Endereço de entrega: {cliente.endereco_entrega}, Nº {cliente.numero}</p>
+            <p>📧 E-mail: {cliente.email}</p>
+        """
+        assunto = "🍕 Capizzas - Confirmação do Pedido"
+        texto = f"Olá {cliente.nome}, recebemos seu pedido! Total: R$ {total:.2f}"
+        destinatario = cliente.email
+
+        enviar_email(destinatario, assunto, texto, html_email)
+        enviar_email("otaciliocesarsantos@gmail.com", "[Cópia Interna] " + assunto, texto, html_email)
 
         messages.success(request, "Pedido finalizado com sucesso! Confirmação enviada por e-mail.")
         return redirect('cardapio')
 
     except Exception as e:
+        print(f"❌ Erro ao finalizar pedido: {e}")
         messages.error(request, "Erro ao finalizar pedido.")
         return redirect('checkout')
+
     
 
 @login_cliente_required

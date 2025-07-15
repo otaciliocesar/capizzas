@@ -41,12 +41,20 @@
 
   <!-- BOTÕES -->
   <div class="botoes-final">
-    <form method="post" action="">
+    {{ carrinho|json_script:"pedido_final_json" }}
+    <form method="post" action="{% url 'finalizar_pedido' %}">
       {% csrf_token %}
-      <input type="hidden" name="pedido_final" value='{{ carrinho|safe }}'>
+      <input type="hidden" name="pedido_final" value="">
       <button type="submit" class="btn-confirmar">✅ Confirmar Pedido</button>
       <a href="{% url 'carrinho' %}" class="btn-voltar">🔙 Voltar ao Carrinho</a>
     </form>
   </div>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const pedido = JSON.parse(document.getElementById("pedido_final_json").textContent);
+    document.querySelector('input[name="pedido_final"]').value = JSON.stringify(pedido);
+  });
+</script>
 {% endblock %}

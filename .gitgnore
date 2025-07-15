@@ -1,21 +1,27 @@
 # Ambiente virtual
 venv/
 
-# Arquivos de cache do Python
+# Arquivos de mídia (uploads)
+media/
+
+# Arquivo de variáveis de ambiente
+.env
+
+# Arquivos temporários, cache e logs
 __pycache__/
 *.py[cod]
-
-# Banco de dados SQLite
-db.sqlite3
-
-# Arquivos de migração temporários
 *.log
 
-# Arquivos do sistema
+# Banco de dados SQLite local
+db.sqlite3
+
+# Arquivos do sistema (macOS, Windows)
 .DS_Store
 Thumbs.db
 
-# Arquivos de midia
-media/
+# Editor config
+.vscode/
+.idea/
 
-.env
+# Arquivos estáticos coletados (se usar collectstatic)
+staticfiles/
