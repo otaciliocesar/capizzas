@@ -349,7 +349,7 @@ def finalizar_pedido(request):
         destinatario = cliente.email
 
         enviar_email(destinatario, assunto, texto, html_email)
-        enviar_email("otaciliocesarsantos@gmail.com", "[Cópia Interna] " + assunto, texto, html_email)
+        enviar_email("contato@capizzas.com", "[Cópia Interna] " + assunto, texto, html_email)
 
         messages.success(request, "Pedido finalizado com sucesso! Confirmação enviada por e-mail.")
         return redirect('cardapio')

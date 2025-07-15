@@ -4,7 +4,7 @@ def enviar_email(destinatario, assunto, corpo_texto, corpo_html):
     msg = EmailMultiAlternatives(
         assunto,
         corpo_texto,
-        'otaciliocesarsantos@gmail.com',
+        'contato@capizzas.com',
         [destinatario]
     )
     msg.attach_alternative(corpo_html, "text/html")
