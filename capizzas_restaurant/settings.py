@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-
+import os
+from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -127,11 +128,8 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+DEFAULT_FROM_EMAIL = 'contatocapizzas@gmail.com'
 
+load_dotenv()
 
-EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
-SENDGRID_API_KEY = ""  # coloque sua API Key do SendGrid
-SENDGRID_SANDBOX_MODE_IN_DEBUG = False  # True para testar sem enviar e-mail real
-SENDGRID_ECHO_TO_STDOUT = True  # Mostra no console o que está sendo enviado
-
-DEFAULT_FROM_EMAIL = 'contatocapizzas@gmail.com'  # Email remetente (verificado no SendGrid)
+MAILERSEND_API_KEY = os.getenv("MAILERSEND_API_KEY")

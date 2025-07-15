@@ -15,6 +15,11 @@ from django.db import transaction
 from .models import Promocao
 from django.core.mail import send_mail
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from utils.email import enviar_email
   
 
 class SobrePageView(TemplateView):
@@ -210,6 +215,7 @@ def carrinho_view(request):
         'bebidas': bebidas  # <-- Adicionado no contexto
     })
 
+
 @login_cliente_required
 @require_http_methods(["GET", "POST"])
 def checkout_view(request):
@@ -221,15 +227,56 @@ def checkout_view(request):
 
         try:
             carrinho = json.loads(carrinho_json)
-            request.session["carrinho"] = carrinho  # Armazena na sessão
-            return redirect("checkout")  # Redireciona para GET desta mesma view
+            request.session["carrinho"] = carrinho  # Salva na sessão
+
+            cliente = request.user.cliente
+            total = sum(float(item["total"]) for item in carrinho)
+
+            # Montar HTML simples do email:
+            itens_html = "".join([
+                f"<li>🍕 {item['pizza1']['nome']}" +
+                (f" + {item['pizza2']['nome']}" if item.get('pizza2') else "") +
+                f" — <strong>R$ {item['total']}</strong></li>"
+                if item['tipo'] == 'pizza' else
+                f"<li>🥤 {item['bebida']['nome']} x {item['quantidade']} — <strong>R$ {item['total']}</strong></li>"
+                for item in carrinho
+            ])
+
+            html_email = f"""
+                <h2>🍕 Confirmação de Pedido - Capizzas</h2>
+                <p>Olá {cliente.nome},</p>
+                <p>Recebemos seu pedido com sucesso! Aqui está o resumo:</p>
+                <ul>{itens_html}</ul>
+                <p><strong>Total do pedido:</strong> R$ {total:.2f}</p>
+                <p>🛵 Em breve estaremos chegando com sua pizza quente e saborosa!</p>
+                <hr>
+                <p>📍 Endereço de entrega: {cliente.endereco_entrega}, Nº {cliente.numero}</p>
+                <p>📧 E-mail: {cliente.email}</p>
+            """
+
+            assunto = "🍕 Capizzas - Confirmação do Pedido"
+            destinatario = request.user.email
+            texto = f"Olá {cliente.nome}, recebemos seu pedido! Total: R$ {total:.2f}"
+
+            # Import da sua função de utils/email.py
+            from utils.email import enviar_email
+            print("ENVIANDO EMAIL...")
+            enviar_email(destinatario, assunto, texto, html_email)
+            response = enviar_email(destinatario, assunto, texto, html_email)
+            print("MailerSend response:", response)
+
+            messages.success(request, "Pedido confirmado! Confirmação enviada por e-mail.")
+            return redirect("checkout")  # Ou para outra página após confirmação
+
         except json.JSONDecodeError:
             messages.error(request, "Erro ao processar o carrinho.")
             return redirect("carrinho")
 
-    # GET: mostra o conteúdo salvo na sessão
     carrinho = request.session.get("carrinho", [])
     return render(request, "checkout.html", {"carrinho": carrinho})
+
+
+
 
 
 @login_cliente_required
@@ -349,17 +396,3 @@ def promocoes_view(request):
 def promocao_detalhe_view(request, slug):
     promocao = get_object_or_404(Promocao, slug=slug, ativa=True)
     return render(request, "pedido_promocao.html", {"promocao": promocao})
-
-def enviar_email_confirmacao(cliente_email, pedido_resumo):
-    assunto = "🍕 Confirmação de Pedido - Capizzas"
-    mensagem = f"Olá! Seu pedido foi recebido com sucesso!\n\n{pedido_resumo}"
-    remetente = settings.DEFAULT_FROM_EMAIL
-    destinatarios = [cliente_email, remetente]  # envia para o cliente e o dono da pizzaria
-
-    send_mail(
-        assunto,
-        mensagem,
-        remetente,
-        destinatarios,
-        fail_silently=False,
-    )

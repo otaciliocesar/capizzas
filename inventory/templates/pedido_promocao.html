@@ -37,7 +37,7 @@
   <!-- Formulário para enviar promoção ao carrinho -->
   <form method="post" action="{% url 'checkout' %}">
     {% csrf_token %}
-    <input type="hidden" name="pedido_final" id="pedido_final">
+    <input type="hidden" name="pedido_final" id="pedido_final" value='{{ carrinho|safe }}'>
     <button type="submit" class="btn-finalizar" onclick="enviarPedido()">🛒 Escolher essa promoção</button>
   </form>
 </div>
