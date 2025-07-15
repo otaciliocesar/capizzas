@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block content %}
+<div style="width: 100vw; display: flex; justify-content: center;">
 <div class="promocao-container">
   <h2>🍕 Promoção: {{ promocao.titulo }}</h2>
   <p>{{ promocao.descricao }}</p>
@@ -41,7 +42,7 @@
     <button type="submit" class="btn-finalizar" onclick="enviarPedido()">🛒 Escolher essa promoção</button>
   </form>
 </div>
-
+</div>
 
 
 <script>

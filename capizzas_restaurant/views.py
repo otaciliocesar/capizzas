@@ -383,8 +383,8 @@ def gerenciar_promocoes(request):
     })
 
 @login_cliente_required
-def pedido_promocao(request, promo_id):
-    promocao = get_object_or_404(Promocao, id=promo_id, ativa=True)
+def pedido_promocao(request, slug):
+    promocao = get_object_or_404(Promocao, slug=slug, ativa=True)
     bebidas = Bebida.objects.all()
     pizzas = promocao.pizzas.all()
 
