@@ -52,7 +52,7 @@ class CompraBebida(models.Model):
     quantidade = models.PositiveIntegerField(default=1)
 
     def __str__(self):
-        return f"{self.quantidade}x {self.bebida.nome} (Pedido #{self.compra.id})"
+        return f"{self.quantidade}x {self.bebida.nome} (Pedido #{self.compra.pk})"
     
     
 class Promocao(models.Model):

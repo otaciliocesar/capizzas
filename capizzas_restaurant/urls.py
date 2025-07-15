@@ -13,13 +13,12 @@ urlpatterns = [
     path('localizacao/', LocalizacaoPageView.as_view(), name='localizacao'),
     path('cardapio/', views.Cardapio, name='cardapio'),
     path('carrinho/', views.carrinho_view, name='carrinho'),
-    path('gerenciar_promocoes/', views.gerenciar_promocoes, name='gerenciar_promocoes'),\
+    path('gerenciar_promocoes/', views.gerenciar_promocoes, name='cadastropromocoes'),\
     path("promocoes/", views.promocoes_view, name="promocoes"),
     path("promocao/<slug:slug>/", views.promocao_detalhe_view, name="promocao_detalhe"),
     path('promocao/excluir/<int:id>/', views.excluir_promocao, name='excluir_promocao'),
     path('promocao/<int:promo_id>/', views.pedido_promocao, name='pedido_promocao'),
     path('login/', LoginView.as_view(template_name='login.html'), name='login'),
-    path('login_cliente/', views.login_cliente, name='login_cliente'),
     path('logout_cliente/', views.logout_cliente, name='logout_cliente'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('cadastropizza/add/', views.cadastro_pizza, name='cadastropizza'),

@@ -10,9 +10,11 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login
 from functools import wraps
 from django.views.decorators.http import require_http_methods, require_POST
-from django.utils.safestring import mark_safe
+from django.template.loader import render_to_string
 from django.db import transaction
 from .models import Promocao
+from django.core.mail import send_mail
+from django.conf import settings
   
 
 class SobrePageView(TemplateView):
@@ -249,17 +251,16 @@ def finalizar_pedido(request):
                         pizza_1_id=pizza1_id,
                         pizza_2_id=pizza2_id,
                         preco_final=preco_final,
-                        quantidade=1  # Você pode expandir isso depois
+                        quantidade=1
                     )
 
                 elif item['tipo'] == 'bebida':
                     bebida_id = item['bebida']['id']
                     quantidade = item['quantidade']
 
-                    # Criar um pedido "vazio" só com bebida (ou associar a uma compra existente)
                     compra = Compra.objects.create(
                         cliente=cliente,
-                        pizza_1=Pizza.objects.first(),  # Dummy para não quebrar a FK
+                        pizza_1=Pizza.objects.first(),  # Dummy temporário
                         preco_final=float(item['total']),
                         quantidade=1
                     )
@@ -269,7 +270,27 @@ def finalizar_pedido(request):
                         quantidade=quantidade
                     )
 
-        messages.success(request, "Pedido finalizado com sucesso!")
+        # Enviar e-mail após o pedido
+        context = {
+            "cliente": cliente,
+            "carrinho": carrinho,
+            "total": sum(float(item["total"]) for item in carrinho)
+        }
+
+        # Renderiza corpo do e-mail HTML
+        html_content = render_to_string("emails/email_confirmacao.html", context)
+
+        # Envia para cliente e dono da pizzaria
+        send_mail(
+            subject="Confirmação do seu pedido - Capizzas 🍕",
+            message="Resumo do pedido disponível em HTML.",  # corpo alternativo
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[request.user.email, "contato@sua-pizzaria.com"],  # <-- altere aqui
+            html_message=html_content,
+            fail_silently=False,
+        )
+
+        messages.success(request, "Pedido finalizado com sucesso! Confirmação enviada por e-mail.")
         return redirect('cardapio')
 
     except Exception as e:
@@ -288,12 +309,12 @@ def gerenciar_promocoes(request):
             promocao = form.save(commit=False)
             promocao.save()
             form.save_m2m()  # Agora funciona corretamente!
-            return redirect('gerenciar_promocoes')
+            return redirect('cadastropromocoes')
     else:
         form = PromocaoForm()
 
     promocoes = Promocao.objects.filter(ativa=True)  # Exibe apenas promoções ativas
-    return render(request, 'gerenciar_promocoes.html', {
+    return render(request, 'cadastropromocoes_form.html', {
         'form': form,
         'promocoes': promocoes
     })
@@ -319,7 +340,7 @@ def excluir_promocao(request, id):
     promocao = get_object_or_404(Promocao, id=id)
     promocao.delete()
     messages.success(request, "Promoção excluída com sucesso.")
-    return redirect('gerenciar_promocoes')
+    return redirect('cadastropromocoes')
 
 def promocoes_view(request):
     promocoes = Promocao.objects.all()
@@ -328,3 +349,17 @@ def promocoes_view(request):
 def promocao_detalhe_view(request, slug):
     promocao = get_object_or_404(Promocao, slug=slug, ativa=True)
     return render(request, "pedido_promocao.html", {"promocao": promocao})
+
+def enviar_email_confirmacao(cliente_email, pedido_resumo):
+    assunto = "🍕 Confirmação de Pedido - Capizzas"
+    mensagem = f"Olá! Seu pedido foi recebido com sucesso!\n\n{pedido_resumo}"
+    remetente = settings.DEFAULT_FROM_EMAIL
+    destinatarios = [cliente_email, remetente]  # envia para o cliente e o dono da pizzaria
+
+    send_mail(
+        assunto,
+        mensagem,
+        remetente,
+        destinatarios,
+        fail_silently=False,
+    )

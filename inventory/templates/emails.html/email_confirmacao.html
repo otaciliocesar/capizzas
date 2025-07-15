@@ -1,0 +1,24 @@
+<h2>🍕 Capizzas - Confirmação do Pedido</h2>
+
+<p>Olá {{ cliente.nome }},</p>
+<p>Recebemos seu pedido com sucesso! Aqui está o resumo:</p>
+
+<ul>
+  {% for item in carrinho %}
+    <li>
+      {% if item.tipo == 'pizza' %}
+        🍕 {{ item.pizza1.nome }}{% if item.pizza2 %} + {{ item.pizza2.nome }}{% endif %} — <strong>R$ {{ item.total }}</strong>
+      {% elif item.tipo == 'bebida' %}
+        🥤 {{ item.bebida.nome }} x {{ item.quantidade }} — <strong>R$ {{ item.total }}</strong>
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+
+<p><strong>Total do pedido:</strong> R$ {{ total }}</p>
+
+<p>🛵 Em breve estaremos chegando com sua pizza quente e saborosa!</p>
+
+<hr>
+<p>📍 Endereço de entrega: {{ cliente.endereco_entrega }}, Nº {{ cliente.numero }}</p>
+<p>📧 E-mail: {{ cliente.email }}</p>

@@ -31,7 +31,7 @@
 
         {% if user.is_authenticated and user.is_superuser %}
             <a href="{% url 'cadastropizza' %}">Cadastro de pizza</a>
-            <a href="{% url 'gerenciar_promocoes' %}">Gerenciar promoções</a>
+            <a href="{% url 'cadastropromocoes' %}">Gerenciar promoções</a>
         {% endif %}
 
         <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">Fazer pedido</a>    

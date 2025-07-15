@@ -11,11 +11,6 @@
         <a href="{% url 'promocao_detalhe' promo.slug %}">
           <img src="{{ promo.imagem.url }}" class="d-block w-100" alt="{{ promo.titulo }}">
         </a>
-        <div class="carousel-caption d-none d-md-block">
-          <h5>{{ promo.titulo }}</h5>
-          <p>{{ promo.descricao }}</p>
-          <a href="{% url 'promocao_detalhe' promo.slug %}" class="btn btn-success">Ver Promoção</a>
-        </div>
       </div>
     {% endfor %}
   </div>
