@@ -173,7 +173,7 @@ def login_cliente(request):
         else:
             messages.error(request, 'Email ou senha incorretos.')
 
-    return render(request, 'login_cliente.html')
+    return render(request, 'login.html')
 
 
 def logout_cliente(request):
@@ -185,7 +185,7 @@ def login_cliente_required(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return redirect(f'/login_cliente/?next={request.path}')
+            return redirect(f'/login/?next={request.path}')
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 

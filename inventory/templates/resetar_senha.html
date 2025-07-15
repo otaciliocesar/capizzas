@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="login-container">
+    <h2>🔑 Nova Senha</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_new_password1">Nova senha:</label>
+            {{ form.new_password1 }}
+        </div>
+        <div class="form-group">
+            <label for="id_new_password2">Confirme a nova senha:</label>
+            {{ form.new_password2 }}
+        </div>
+        {% if form.errors %}
+            <p class="error-message">Verifique os dados informados.</p>
+        {% endif %}
+        <button type="submit" class="submit-btn">Redefinir senha</button>
+    </form>
+</div>
+{% endblock %}

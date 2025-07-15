@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="login-container">
+    <h2>✅ Senha Redefinida</h2>
+    <p>Sua senha foi alterada com sucesso.</p>
+    <p><a href="{% url 'login' %}">Clique aqui para fazer login</a></p>
+</div>
+{% endblock %}

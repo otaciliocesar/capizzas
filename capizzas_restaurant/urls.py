@@ -4,6 +4,8 @@ from django.urls import path
 from . import views
 from . views import SobrePageView, LocalizacaoPageView
 from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth import views as auth_views
+
 
 app = 'capizzas_restaurant'
 
@@ -30,4 +32,8 @@ urlpatterns = [
     path('cadastrocliente/', views.cadastro_cliente, name='cadastrocliente'),
     path('checkout/', views.checkout_view, name='checkout'),
     path('finalizar/', views.finalizar_pedido, name='finalizar_pedido'),
+    path('recuperar-senha/', auth_views.PasswordResetView.as_view(template_name='recuperar_senha.html'), name='password_reset'),
+    path('recuperar-senha/enviado/', auth_views.PasswordResetDoneView.as_view(template_name='recuperar_senha_enviado.html'), name='password_reset_done'),
+    path('resetar/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='resetar_senha.html'), name='password_reset_confirm'),
+    path('resetar/sucesso/', auth_views.PasswordResetCompleteView.as_view(template_name='resetar_sucesso.html'), name='password_reset_complete'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

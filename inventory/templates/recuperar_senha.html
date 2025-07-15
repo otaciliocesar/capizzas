@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="login-container">
+    <h2>🔐 Recuperar Senha</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_email">Email cadastrado:</label>
+            {{ form.email }}
+        </div>
+        {% if form.errors %}
+            <p class="error-message">Erro ao enviar o link. Verifique o email informado.</p>
+        {% endif %}
+        <button type="submit" class="submit-btn">Enviar link de recuperação</button>
+    </form>
+    <p>Lembrou a senha? <a href="{% url 'login' %}">Voltar para login</a></p>
+</div>
+{% endblock %}

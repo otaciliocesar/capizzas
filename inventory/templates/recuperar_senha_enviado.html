@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="login-container">
+    <h2>📨 Verifique seu Email</h2>
+    <p>Enviamos um link de recuperação para o seu e-mail, se ele estiver cadastrado.</p>
+    <p>Cheque sua caixa de entrada ou spam.</p>
+    <p><a href="{% url 'login' %}">Voltar para o login</a></p>
+</div>
+{% endblock %}
