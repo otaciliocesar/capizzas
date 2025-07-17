@@ -66,9 +66,9 @@
   </form>
 
   {% if promocao %}
-    <a class="btn-voltar" href="{% url 'pedido_promocao' promocao.slug %}">Voltar</a>
+    <a class="btn-voltar" href="{% url 'pedido_promocao' promocao.slug %}">Refazer pedido</a>
   {% else %}
-    <a class="btn-voltar" href="{% url 'carrinho' %}">Voltar</a>
+    <a class="btn-voltar" href="{% url 'carrinho' %}">Refazer pedido</a>
 {% endif %}
 </div>
 

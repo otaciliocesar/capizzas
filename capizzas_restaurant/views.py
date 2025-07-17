@@ -448,6 +448,3 @@ def promocoes_view(request):
     promocoes = Promocao.objects.all()
     return render(request, "promocoes.html", {"promocoes": promocoes})
 
-def promocao_detalhe_view(request, slug):
-    promocao = get_object_or_404(Promocao, slug=slug, ativa=True)
-    return render(request, "pedido_promocao.html", {"promocao": promocao})

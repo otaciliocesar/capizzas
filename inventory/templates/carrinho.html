@@ -10,7 +10,9 @@
     <div class="botoes-sabores">
       <button class="btn-sabor" onclick="escolherSabores(1)">Inteira</button>
       <button class="btn-sabor" onclick="escolherSabores(2)">Meio a Meio</button>
+      
     </div>
+    
   </div>
 
   <!-- Etapa 2: Filtro de Pizzas -->
@@ -34,8 +36,8 @@
   </div>
 
   <!-- Lista de Bebidas -->
-  <div class="etapa" id="etapaBebidas" style="display: none;">
-    <h3>🥤 Escolha sua Bebida</h3>
+  <div id="etapaBebidas" style="display: none;">
+    <h2>🥤 Escolha sua Bebida</h2>
     <div class="grade-bebidas">
       {% for bebida in bebidas %}
       <div class="card-bebida">
@@ -45,7 +47,7 @@
        <div class="acoes-bebida">
   <input type="number" min="1" value="1" id="quantidade-{{ bebida.id }}" class="input-quantidade">
   <button onclick="adicionarBebidaAoPedido('{{ bebida.id }}', '{{ bebida.nome }}', '{{ bebida.preco }}')">Adicionar</button>
-    </div>
+</div>
 
       </div>
       {% endfor %}
