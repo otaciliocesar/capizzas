@@ -12,7 +12,7 @@ from functools import wraps
 from django.views.decorators.http import require_http_methods, require_POST
 from django.template.loader import render_to_string
 from django.db import transaction
-from .models import Promocao
+from .models import Promocao, Cliente
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -45,30 +45,44 @@ def Cardapio(request):
 
 def cadastro_pizza(request):
     if not request.user.is_superuser:
-        return redirect('base')  # ou uma mensagem de erro
+        return redirect('base')  # Apenas admin acessa
 
-    # Form pizza
-    if request.method == 'POST' and 'nome' in request.POST and 'ingredientes' in request.POST:
-        form = PizzaForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('cadastropizza')
-    else:
-        form = PizzaForm()
-
-    # Form bebida (não submete aqui)
+    pizza_form = PizzaForm()
     bebida_form = BebidaForm()
+
+    bebida_id = request.GET.get('editar_bebida')
+    bebida_instance = Bebida.objects.filter(id=bebida_id).first() if bebida_id else None
+    if bebida_instance:
+        bebida_form = BebidaForm(instance=bebida_instance)
+
+    if request.method == 'POST':
+        if 'nome' in request.POST and 'ingredientes' in request.POST:
+            # Cadastro ou edição de pizza
+            pizza_id = request.POST.get('pizza_id')
+            pizza_instance = Pizza.objects.filter(id=pizza_id).first() if pizza_id else None
+            pizza_form = PizzaForm(request.POST, request.FILES, instance=pizza_instance)
+            if pizza_form.is_valid():
+                pizza_form.save()
+                return redirect('cadastropizza')
+        else:
+            # Cadastro ou edição de bebida
+            bebida_form = BebidaForm(request.POST, request.FILES, instance=bebida_instance)
+            if bebida_form.is_valid():
+                bebida_form.save()
+                return redirect('cadastropizza')
 
     pizzas = Pizza.objects.all().order_by('nome')
     bebidas = Bebida.objects.all().order_by('nome')
 
     context = {
-        'form': form,
+        'form': pizza_form,
         'bebida_form': bebida_form,
         'pizzas': pizzas,
         'bebidas': bebidas,
+        'bebida_editando': bebida_instance,  # para exibir "Editando bebida" no template se necessário
     }
     return render(request, 'cadastropizza_form.html', context)
+
 
 
 def cadastrar_bebida(request):
@@ -448,3 +462,25 @@ def promocoes_view(request):
     promocoes = Promocao.objects.all()
     return render(request, "promocoes.html", {"promocoes": promocoes})
 
+@login_cliente_required
+def clientes_pedidos(request):
+    cliente = Cliente.objects.get(user=request.user)
+    pedidos = Compra.objects.filter(cliente=cliente).order_by('-timestamp').prefetch_related('bebidas', 'comprabebida_set')
+
+    return render(request, 'clientespedidos.html', {'pedidos': pedidos})
+
+
+@login_cliente_required
+def cadastro_bebidas_view(request):
+    if not request.user.is_superuser:
+        return redirect('home')
+
+    form = BebidaForm()
+    if request.method == 'POST':
+        form = BebidaForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('cadastrobebidas')
+
+    bebidas = Bebida.objects.all().order_by('nome')
+    return render(request, 'cadastrobebidas_form.html', {'form': form, 'bebidas': bebidas})

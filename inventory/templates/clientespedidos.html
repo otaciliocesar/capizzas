@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Meus Pedidos - Capizzas{% endblock %}
+
+{% block content %}
+<div class="pedidos-container">
+  <h2>📦 Meus Pedidos</h2>
+
+  {% if pedidos %}
+    <div class="pedidos-lista">
+      {% for pedido in pedidos %}
+        <div class="pedido-card">
+          <h3>🧾 Pedido #{{ pedido.id }} - {{ pedido.timestamp|date:"d/m/Y H:i" }}</h3>
+          <p><strong>Sabores:</strong> {{ pedido.pizza_1.nome }}{% if pedido.pizza_2 %} + {{ pedido.pizza_2.nome }}{% endif %}</p>
+          <p><strong>Quantidade:</strong> {{ pedido.quantidade }}</p>
+          <p><strong>Bebidas:</strong>
+            {% if pedido.bebidas.all %}
+              <ul>
+              {% for item in pedido.comprabebida_set.all %}
+                <li>{{ item.quantidade }}x {{ item.bebida.nome }}</li>
+              {% endfor %}
+              </ul>
+            {% else %}
+              Nenhuma
+            {% endif %}
+          </p>
+          <p><strong>Total:</strong> R$ {{ pedido.preco_final }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>Você ainda não realizou nenhum pedido.</p>
+  {% endif %}
+</div>
+{% endblock %}

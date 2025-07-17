@@ -31,22 +31,39 @@
     <a href="{% url 'sobre' %}">Sobre</a>
 
     {% if user.is_authenticated and user.is_superuser %}
-      <a href="{% url 'cadastropizza' %}">Cadastro de pizza</a>
+      <li class="dropdown">
+  <a href="#">Produtos ▾</a>
+  <ul class="dropdown-menu">
+    <li><a href="{% url 'cadastropizza' %}">Pizzas</a></li>
+    <li><a href="{% url 'cadastrobebidas' %}">Bebidas</a></li>
+    <li><a href="">Diversos</a></li>
+  </ul>
+</li>
       <a href="{% url 'cadastropromocoes' %}">Gerenciar promoções</a>
     {% endif %}
 
     <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">Fazer pedido</a>
 
     {% if user.is_authenticated %}
-      Olá, {{ user.first_name }}!
-      <form action="{% url 'logout' %}" method="post" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit" class="login-btn">Logout</button>
-      </form>
+      <div class="user-menu" tabindex="0" aria-haspopup="true" aria-expanded="false">
+        <!-- Ícone de usuário SVG inline -->
+        <svg class="user-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
+        </svg>
+        Olá, {{ user.first_name }}!
+        <div class="user-dropdown" role="menu" aria-label="Menu do usuário">
+          <a href="" role="menuitem">Editar Perfil</a>
+          <a href="{% url 'meus_pedidos' %}" role="menuitem">Meus Pedidos</a>
+          <form action="{% url 'logout' %}" method="post" style="margin: 0;">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn" style="width: 100%; text-align: left; border: none; background:none; padding:10px 15px; cursor:pointer;">Logout</button>
+          </form>
+        </div>
+      </div>
 
     {% elif request.session.cliente_nome %}
       Olá, {{ request.session.cliente_nome }}!
-      <a href="{% url 'logout_cliente' %}" class="login-btn">Logout</a>
+      <a href="{% url 'logout_cliente' %}" class="logout-btn">Logout</a>
 
     {% else %}
       <a href="{% url 'login' %}" class="login-btn">Login</a>

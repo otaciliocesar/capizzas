@@ -41,7 +41,9 @@
     <div class="grade-bebidas">
       {% for bebida in bebidas %}
       <div class="card-bebida">
-        <img src="{{ bebida.imagem.url }}" alt="{{ bebida.nome }}" style="max-height: 100px;">
+        {% if bebida.imagem %}
+  <img src="{{ bebida.imagem.url }}" alt="{{ bebida.nome }}" class="pizza-imagem">
+{% endif %}
         <h5>{{ bebida.nome }}</h5>
         <span class="preco">R$ {{ bebida.preco }}</span>
        <div class="acoes-bebida">

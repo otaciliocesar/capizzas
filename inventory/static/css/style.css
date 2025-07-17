@@ -66,6 +66,77 @@ header nav a:hover {
   background-color: #e64a19;
 }
 
+.logout-btn {
+  background-color: #ec2825 !important;
+  padding: 8px 15px;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: #b71c1c !important;
+}
+
+/* Container do usuário e dropdown */
+.user-menu {
+  position: relative;
+  display: inline-block;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 5px;
+  user-select: none;
+}
+
+.user-menu:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ícone perfil inline */
+.user-icon {
+  margin-right: 8px;
+  vertical-align: middle;
+  width: 20px;
+  height: 20px;
+  fill: white;
+}
+
+/* Dropdown menu escondido por padrão */
+.user-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: #328d52;
+  min-width: 150px;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  z-index: 100;
+}
+
+/* Itens do dropdown */
+.user-dropdown a {
+  display: block;
+  padding: 10px 15px;
+  color: white;
+  text-decoration: none;
+  font-weight: normal;
+  transition: background-color 0.3s ease;
+}
+
+.user-dropdown a:hover {
+  background-color: #26793f;
+}
+
+/* Mostrar dropdown ao passar o mouse */
+.user-menu:hover .user-dropdown {
+  display: block;
+}
+
 nav form {
   display: inline;
 }
@@ -1266,4 +1337,52 @@ footer .last-update {
   .preco {
     margin-top: 8px;
   }
+}
+.pedidos-container {
+  max-width: 1450px;
+  margin: 0 auto;
+  padding: 20px;
+}
+.pedidos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.pedido-card {
+  background-color: #f9f9f9;
+  border-left: 5px solid #328d60;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+/* Dropdown */
+nav .dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+nav .dropdown-menu {
+  display: none;
+  position: absolute;
+  background-color: #fff;
+  min-width: 160px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  z-index: 1;
+}
+
+nav .dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+nav .dropdown-menu li a {
+  color: #333;
+  padding: 12px 16px;
+  display: block;
+  text-decoration: none;
+}
+
+nav .dropdown-menu li a:hover {
+  background-color: #f2f2f2;
 }
