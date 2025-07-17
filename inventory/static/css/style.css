@@ -497,7 +497,7 @@ footer .last-update {
 }
 /* Container principal do carrinho para ficar abaixo do header e centralizado */
 .etapa-container {
-  max-width: 900px;
+  max-width: 1450px;
   margin: 80px auto 60px auto; /* 80px do topo para "afastar do header" */
   padding: 0 20px;
   background-color: #fff;
@@ -811,6 +811,7 @@ footer .last-update {
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  align-items: center;
 }
 
 .submit-btn:hover {
@@ -887,4 +888,382 @@ footer .last-update {
 
 .registro-container .submit-btn:hover {
   background-color: #26703f;
+}
+
+.promocao-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.promocao-container h2,
+.promocao-container h3 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #328d52;
+}
+
+.promocao-container .form-group {
+  margin-bottom: 15px;
+}
+
+.promocao-container .submit-btn {
+  background-color: #328d52;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: block;
+  margin: 20px auto; /* Centraliza */
+}
+
+.promocao-container .submit-btn:hover {
+  background-color: #286f43;
+}
+.titulo-centralizado {
+  text-align: center;
+  color: #328d52;
+  font-size: 1.8rem;
+  margin-bottom: 30px;
+}
+
+.form-promocao .form-group {
+  margin-bottom: 20px;
+}
+
+.form-promocao label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+
+.form-promocao textarea,
+.form-promocao select,
+.form-promocao input:not([type="checkbox"]):not([type="radio"]) {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+.form-promocao input[type="checkbox"] {
+  width: 20%;
+  transform: scale(1.2); /* aumenta o tamanho visual do checkbox */
+  cursor: pointer;
+}
+.form-group.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.scroll-box {
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 6px;
+  background-color: white;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.submit-btn {
+  background-color: #328d52;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+.submit-btn:hover {
+  background-color: #26703f;
+}
+
+.linha-divisoria {
+  margin: 40px 0;
+  border: none;
+  border-top: 1px solid #ccc;
+}
+
+.lista-promocoes {
+  list-style: none;
+  padding: 0;
+}
+
+.item-promocao {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.item-promocao img {
+  max-width: 200px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.form-exclusao {
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.btn-deletar {
+  background-color: #e53935;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-deletar:hover {
+  background-color: #c62828;
+}
+
+.nenhuma-promocao {
+  text-align: center;
+  font-style: italic;
+  color: #777;
+}
+.scroll-box {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  padding: 0;
+}
+
+.checkbox-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 1rem;
+  color: #333;
+  gap: 10px; /* espaçamento entre label e checkbox */
+}
+
+.checkbox-row:last-child {
+  border-bottom: none;
+}
+
+.item-label {
+  flex: 1;
+  white-space: nowrap;       /* Impede quebra de linha */
+  overflow: hidden;          /* Esconde texto excedente */
+  text-overflow: ellipsis;   /* Adiciona "..." se o texto for muito grande */
+  padding-right: 10px;
+}
+.item-label:hover {
+  overflow: visible;
+  white-space: normal;
+  background-color: #fffbea;
+  z-index: 1;
+  position: relative;
+}
+.cadastro-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 50px;
+  padding: 40px 20px 80px 20px;
+  max-width: 1200px;
+  margin: 0 auto 60px auto;
+}
+
+.registro-container {
+  flex: 1 1 450px;
+  max-width: 500px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 30px 25px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+.registro-container h2 {
+  color: #328d52;
+  font-size: 1.9rem;
+  margin-bottom: 25px;
+}
+
+.filtro-input {
+  width: 100%;
+  max-width: 450px;
+  padding: 12px 18px;
+  font-size: 1rem;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  transition: border-color 0.3s ease;
+}
+
+.filtro-input:focus {
+  border-color: #328d52;
+  outline: none;
+}
+
+.lista-pizzas {
+  list-style: none;
+  padding: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: white;
+}
+
+.pizza-item {
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 15px;
+}
+
+.pizza-item:last-child {
+  border-bottom: none;
+}
+
+.pizza-item strong {
+  flex: 1 1 200px;
+  color: #328d52;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.pizza-ingredientes {
+  flex: 2 1 250px;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.preco {
+  flex: 0 0 90px;
+  font-weight: bold;
+  color: #d62828;
+  font-size: 1.05rem;
+}
+
+.pizza-imagem {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+}
+
+.acoes-pizza {
+  flex: 0 0 130px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.acoes-pizza a {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: none;
+  user-select: none;
+  transition: background-color 0.3s ease;
+  display: inline-block;
+}
+
+.btn-editar {
+  background-color: #328d52;
+  color: white;
+}
+
+.btn-editar:hover {
+  background-color: #26793f;
+}
+
+.btn-excluir {
+  background-color: #e53935;
+  color: white;
+}
+
+.btn-excluir:hover {
+  background-color: #c62828;
+}
+
+.error-message {
+  background-color: #fdecea;
+  color: #c0392b;
+  border: 1px solid #e0b4b4;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  font-weight: bold;
+  max-width: 450px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Form botão padrão */
+.submit-btn {
+  background-color: #328d52;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.3s ease;
+  display: inline-block;
+}
+
+.submit-btn:hover {
+  background-color: #26793f;
+}
+
+/* Responsividade */
+@media (max-width: 960px) {
+  .cadastro-wrapper {
+    flex-direction: column;
+    padding: 20px 15px 50px 15px;
+  }
+
+  .registro-container {
+    max-width: 100%;
+    margin: 0 auto 40px auto;
+  }
+
+  .pizza-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .acoes-pizza {
+    justify-content: flex-start;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .preco {
+    margin-top: 8px;
+  }
 }

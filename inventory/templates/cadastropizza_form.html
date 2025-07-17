@@ -1,97 +1,100 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block content %}
 <div class="cadastro-wrapper">
-  
+
   <!-- Formulário de cadastro de pizza -->
   <div class="registro-container">
-      <h2>Cadastrar Pizza</h2>
-      {% if error %}
-      <p class="error">{{ error }}</p>
-      {% endif %}
-      <form method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-          {{ form.as_p }}
-          <button type="submit">Registrar</button>
-      </form>
+    <h2>Cadastrar Pizza</h2>
+    {% if error %}
+      <p class="error-message">{{ error }}</p>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="submit-btn">Registrar</button>
+    </form>
 
-      <h2 style="margin-top:40px;">Pizzas Cadastradas</h2>
-      <input type="text" id="filtro" placeholder="🔍 Buscar pizza..." class="filtro-input">
-      <ul id="lista-pizzas">
-          {% for pizza in pizzas %}
-          <li class="pizza-item">
-              <strong>{{ pizza.nome }}</strong><br>
-              {{ pizza.ingredientes }}<br>
-              R$ {{ pizza.preco }}<br>
-              {% if pizza.imagem %}
-              <img src="{{ pizza.imagem.url }}" alt="{{ pizza.nome }}" width="100"><br>
-              {% endif %}
-              <div class="acoes-pizza">
-                  <a href="{% url 'editar_pizza' pizza.id %}" class="btn-editar">✏️ Editar</a>
-                  <a href="{% url 'excluir_pizza' pizza.id %}" class="btn-excluir" onclick="return confirm('Tem certeza que deseja excluir esta pizza?')">🗑️ Excluir</a>
-              </div>
-          </li>
-          {% empty %}
-          <li>Nenhuma pizza cadastrada.</li>
-          {% endfor %}
-      </ul>
+    <h2 style="margin-top:40px;">Pizzas Cadastradas</h2>
+    <input type="text" id="filtro" placeholder="🔍 Buscar pizza..." class="filtro-input">
+
+    <ul id="lista-pizzas" class="lista-pizzas">
+      {% for pizza in pizzas %}
+      <li class="pizza-item">
+        <strong>{{ pizza.nome }}</strong><br>
+        <span class="pizza-ingredientes">{{ pizza.ingredientes }}</span><br>
+        <span class="preco">R$ {{ pizza.preco }}</span><br>
+        {% if pizza.imagem %}
+          <img src="{{ pizza.imagem.url }}" alt="{{ pizza.nome }}" class="pizza-imagem">
+        {% endif %}
+        <div class="acoes-pizza">
+          <a href="{% url 'editar_pizza' pizza.id %}" class="btn-editar">✏️ Editar</a>
+          <a href="{% url 'excluir_pizza' pizza.id %}" class="btn-excluir" onclick="return confirm('Tem certeza que deseja excluir esta pizza?')">🗑️ Excluir</a>
+        </div>
+      </li>
+      {% empty %}
+      <li class="nenhum-item">Nenhuma pizza cadastrada.</li>
+      {% endfor %}
+    </ul>
   </div>
 
   <!-- Formulário de cadastro de bebida -->
   <div class="registro-container">
-      <h2>Cadastrar Bebida</h2>
-      <form method="post" enctype="multipart/form-data" action="{% url 'cadastrar_bebida' %}">
-          {% csrf_token %}
-          {{ bebida_form.as_p }}
-          <button type="submit">Registrar Bebida</button>
-      </form>
+    <h2>Cadastrar Bebida</h2>
+    <form method="post" enctype="multipart/form-data" action="{% url 'cadastrar_bebida' %}">
+      {% csrf_token %}
+      {{ bebida_form.as_p }}
+      <button type="submit" class="submit-btn">Registrar Bebida</button>
+    </form>
 
-      <h2 style="margin-top:40px;">Bebidas Cadastradas</h2>
-      <input type="text" id="filtro-bebida" placeholder="🔍 Buscar bebida..." class="filtro-input">
-      <ul id="lista-bebidas">
-          {% for bebida in bebidas %}
-          <li class="pizza-item">
-              <strong>{{ bebida.nome }}</strong><br>
-              R$ {{ bebida.preco }}<br>
-              {% if bebida.imagem %}
-              <img src="{{ bebida.imagem.url }}" alt="{{ bebida.nome }}" width="100"><br>
-              {% endif %}
-              <div class="acoes-pizza">
-                  <a href="{% url 'editar_bebida' bebida.id %}" class="btn-editar">✏️ Editar</a>
-                  <a href="{% url 'excluir_bebida' bebida.id %}" class="btn-excluir" onclick="return confirm('Deseja excluir esta bebida?')">🗑️ Excluir</a>
-              </div>
-          </li>
-          {% empty %}
-          <li>Nenhuma bebida cadastrada.</li>
-          {% endfor %}
-      </ul>
+    <h2 style="margin-top:40px;">Bebidas Cadastradas</h2>
+    <input type="text" id="filtro-bebida" placeholder="🔍 Buscar bebida..." class="filtro-input">
+
+    <ul id="lista-bebidas" class="lista-pizzas">
+      {% for bebida in bebidas %}
+      <li class="pizza-item">
+        <strong>{{ bebida.nome }}</strong><br>
+        <span class="preco">R$ {{ bebida.preco }}</span><br>
+        {% if bebida.imagem %}
+          <img src="{{ bebida.imagem.url }}" alt="{{ bebida.nome }}" class="pizza-imagem">
+        {% endif %}
+        <div class="acoes-pizza">
+          <a href="{% url 'editar_bebida' bebida.id %}" class="btn-editar">✏️ Editar</a>
+          <a href="{% url 'excluir_bebida' bebida.id %}" class="btn-excluir" onclick="return confirm('Deseja excluir esta bebida?')">🗑️ Excluir</a>
+        </div>
+      </li>
+      {% empty %}
+      <li class="nenhum-item">Nenhuma bebida cadastrada.</li>
+      {% endfor %}
+    </ul>
   </div>
 
 </div>
 
 <script>
-    // Filtro pizza
-    const filtro = document.getElementById("filtro");
-    const lista = document.getElementById("lista-pizzas");
-    filtro.addEventListener("keyup", function () {
-        const termo = filtro.value.toLowerCase();
-        const itens = lista.getElementsByTagName("li");
-        Array.from(itens).forEach(function (item) {
-            const texto = item.textContent.toLowerCase();
-            item.style.display = texto.includes(termo) ? "" : "none";
-        });
+  // Filtro pizza
+  const filtro = document.getElementById("filtro");
+  const lista = document.getElementById("lista-pizzas");
+  filtro.addEventListener("keyup", function () {
+    const termo = filtro.value.toLowerCase();
+    const itens = lista.getElementsByTagName("li");
+    Array.from(itens).forEach(function (item) {
+      const texto = item.textContent.toLowerCase();
+      item.style.display = texto.includes(termo) ? "" : "none";
     });
+  });
 
-    // Filtro bebida
-    const filtroBebida = document.getElementById("filtro-bebida");
-    const listaBebida = document.getElementById("lista-bebidas");
-    filtroBebida.addEventListener("keyup", function () {
-        const termo = filtroBebida.value.toLowerCase();
-        const itens = listaBebida.getElementsByTagName("li");
-        Array.from(itens).forEach(function (item) {
-            const texto = item.textContent.toLowerCase();
-            item.style.display = texto.includes(termo) ? "" : "none";
-        });
+  // Filtro bebida
+  const filtroBebida = document.getElementById("filtro-bebida");
+  const listaBebida = document.getElementById("lista-bebidas");
+  filtroBebida.addEventListener("keyup", function () {
+    const termo = filtroBebida.value.toLowerCase();
+    const itens = listaBebida.getElementsByTagName("li");
+    Array.from(itens).forEach(function (item) {
+      const texto = item.textContent.toLowerCase();
+      item.style.display = texto.includes(termo) ? "" : "none";
     });
+  });
 </script>
 {% endblock %}

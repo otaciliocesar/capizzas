@@ -3,81 +3,90 @@
 
 {% block content %}
 <div class="promocao-container">
-  <h2>🎯 Gerenciar Promoções</h2>
+  <h2 class="titulo-centralizado">🎯 Gerenciar Promoções</h2>
 
   <!-- Formulário para criar nova promoção -->
-  <form method="post" enctype="multipart/form-data">
+  <form method="post" enctype="multipart/form-data" class="form-promocao">
     {% csrf_token %}
     <div class="form-group">
-      {{ form.titulo.label_tag }}<br>
+      {{ form.titulo.label_tag }}
       {{ form.titulo }}
     </div>
 
     <div class="form-group">
-      {{ form.descricao.label_tag }}<br>
+      {{ form.descricao.label_tag }}
       {{ form.descricao }}
     </div>
 
     <div class="form-group">
-      {{ form.imagem.label_tag }}<br>
+      {{ form.imagem.label_tag }}
       {{ form.imagem }}
     </div>
 
-    <div class="form-group">
-      {{ form.pizzas.label_tag }}<br>
-      <div style="max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 8px;">
-        {{ form.pizzas }}
+<div class="form-group">
+  <label class="form-label">{{ form.pizzas.label }}</label>
+  <div class="scroll-box">
+    {% for checkbox in form.pizzas %}
+      <div class="checkbox-row">
+        <span class="item-label">{{ checkbox.choice_label }}</span>
+        {{ checkbox.tag }}
       </div>
-    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="form-group">
+  <label class="form-label">{{ form.bebidas.label }}</label>
+  <div class="scroll-box">
+    {% for checkbox in form.bebidas %}
+      <div class="checkbox-row">
+        <span class="item-label">{{ checkbox.choice_label }}</span>
+        {{ checkbox.tag }}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
 
     <div class="form-group">
-      {{ form.bebidas.label_tag }}<br>
-      <div style="max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 8px;">
-        {{ form.bebidas }}
-      </div>
+      {{ form.preco.label_tag }}
+      {{ form.preco }}
     </div>
-    <div class="form-group">
-        {{ form.preco.label_tag }}<br>
-        {{ form.preco }}
-    </div>
-    <div class="form-group">
-      {{ form.ativa }} {{ form.ativa.label_tag }}
+
+    <div class="form-group checkbox-group">
+     {{ form.ativa.label_tag }}{{ form.ativa }} 
     </div>
 
     <button type="submit" class="submit-btn">➕ Criar Promoção</button>
   </form>
 
-  <hr>
+  <hr class="linha-divisoria">
 
-  <h3>📋 Promoções Atuais</h3>
+  <h3 class="titulo-centralizado">📋 Promoções Atuais</h3>
   <ul style="list-style: none; padding: 0;">
-    {% for promo in promocoes %}
-      <li style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #ddd;">
-        <strong>{{ promo.titulo }}</strong> —
-        {% if promo.ativa %}✅ Ativa{% else %}⛔ Inativa{% endif %}<br>
+  {% for promo in promocoes %}
+    <li class="item-promocao">
+      <strong>{{ promo.titulo }}</strong> —
+      {% if promo.ativa %}✅ Ativa{% else %}⛔ Inativa{% endif %}<br>
 
-        <img src="{{ promo.imagem.url }}" alt="{{ promo.titulo }}" style="max-width: 200px; border-radius: 8px; margin-top: 10px;"><br>
+      <img src="{{ promo.imagem.url }}" alt="{{ promo.titulo }}"><br>
 
-        {% if promo.pizzas.all %}
-          <p>🍕 <strong>Pizzas:</strong>
-            {{ promo.pizzas.all|join:", " }}
-          </p>
-        {% endif %}
+      {% if promo.pizzas.all %}
+        <p>🍕 <strong>Pizzas:</strong> {{ promo.pizzas.all|join:", " }}</p>
+      {% endif %}
 
-        {% if promo.bebidas.all %}
-          <p>🥤 <strong>Bebidas:</strong>
-            {{ promo.bebidas.all|join:", " }}
-          </p>
-        {% endif %}
+      {% if promo.bebidas.all %}
+        <p>🥤 <strong>Bebidas:</strong> {{ promo.bebidas.all|join:", " }}</p>
+      {% endif %}
 
-        <form method="post" action="{% url 'excluir_promocao' promo.id %}" style="display:inline-block; margin-left: 10px;">
-          {% csrf_token %}
-          <button type="submit" class="btn-deletar" onclick="return confirm('Tem certeza que deseja excluir esta promoção?')">🗑 Excluir</button>
-        </form>
-      </li>
-    {% empty %}
-      <p>Nenhuma promoção cadastrada.</p>
-    {% endfor %}
-  </ul>
+      <form method="post" action="{% url 'excluir_promocao' promo.id %}" style="display:inline-block; margin-top: 10px;">
+        {% csrf_token %}
+        <button type="submit" class="btn-deletar" onclick="return confirm('Tem certeza que deseja excluir esta promoção?')">🗑 Excluir</button>
+      </form>
+    </li>
+  {% empty %}
+    <p style="text-align: center;">Nenhuma promoção cadastrada.</p>
+  {% endfor %}
+</ul>
 </div>
 {% endblock %}
