@@ -9,11 +9,6 @@
         <a href="{% url 'pedido_promocao' promo.slug %}">
           <img src="{{ promo.imagem.url }}" class="d-block w-100" alt="{{ promo.titulo }}">
         </a>
-      <div class="carousel-caption d-none d-md-block">
-        <!-- Você pode adicionar título, descrição ou texto aqui -->
-        <h5>{{ promo.titulo }}</h5>
-        <p>{{ promo.descricao }}</p>
-      </div>
     </div>
     {% endfor %}
   </div>

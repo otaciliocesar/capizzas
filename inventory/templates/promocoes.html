@@ -10,16 +10,18 @@
 
 <div class="cardapio-grid" id="lista-promocoes">
     {% for promocao in promocoes %}
-    <div class="pizza-card" data-slug="{{ promocao.slug }}">
-        {% if promocao.imagem %}
-        <img src="{{ promocao.imagem.url }}" alt="{{ promocao.nome }}">
-        {% else %}
-        <img src="{% static 'img/promocao_default.jpg' %}" alt="Promoção sem imagem">
-        {% endif %}
-        <h3 class="pizza-nome">{{ promocao.nome }}</h3>
-        <p class="pizza-ingredientes">{{ promocao.descricao }}</p>
-        <div class="preco">R$ {{ promocao.preco }}</div>
+    <div class="promocao-card" data-slug="{{ promocao.slug }}">
+    {% if promocao.imagem %}
+    <img src="{{ promocao.imagem.url }}" alt="{{ promocao.nome }}">
+    {% else %}
+    <img src="{% static 'img/promocao_default.jpg' %}" alt="Promoção sem imagem">
+    {% endif %}
+    <div class="promocao-info">
+        <h3 class="promocao-nome">{{ promocao.nome }}</h3>
+        <p class="promocao-descricao">{{ promocao.descricao }}</p>
+        <div class="promocao-preco">R$ {{ promocao.preco }}</div>
     </div>
+</div>
     {% endfor %}
 </div>
 
@@ -40,11 +42,11 @@ document.getElementById("busca-promocao").addEventListener("keyup", function () 
     });
 });
 
-document.querySelectorAll(".pizza-card").forEach(card => {
-    card.addEventListener("click", function () {
-        const slug = this.dataset.slug;
-        window.location.href = `/promocao/${slug}/`;
-    });
-})
+document.querySelectorAll(".promocao-card").forEach(card => {
+  card.addEventListener("click", function () {
+    const slug = this.dataset.slug;
+    window.location.href = `/promocao/${slug}/`;
+  });
+});
 </script>
 {% endblock %}

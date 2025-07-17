@@ -1,4 +1,4 @@
-/* style_capizzas.css - CSS atualizado sem redundâncias visíveis ou conflitos diretos de regras */
+/* style_capizzas.css - versão mínima com foco em header e footer */
 
 /* Reset básico */
 * {
@@ -10,6 +10,7 @@
 body {
   font-family: Arial, sans-serif;
   background-color: #ffffff;
+  color: #333;
 }
 
 /* HEADER */
@@ -97,149 +98,400 @@ footer .last-update {
   font-size: 0.9em;
 }
 
-/* COMPONENTES REUTILIZÁVEIS */
-.button {
-  background-color: #ff5722;
-  color: white;
-  padding: 14px 25px;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.1em;
-  font-weight: bold;
+/* Responsivo */
+@media (max-width: 768px) {
+  header nav {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+}
+/* cardapio.css ou outro arquivo vinculado à página do carrossel */
+
+/* Centraliza o carrossel e define dimensões fixas */
+#carouselPromo {
+    max-width: 1450px;
+    height: 600px;
+    margin: 30px auto; /* centraliza e adiciona espaçamento vertical */
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Faz a imagem preencher a área definida */
+#carouselPromo .carousel-item img {
+    width: 100%;
+    height: 600px;
+    object-fit: cover; /* Corta sem distorcer */
+}
+
+
+/* Estilo para o texto da legenda */
+#carouselPromo .carousel-caption {
+    background-color: rgba(0, 0, 0, 0.5); /* fundo escuro translúcido */
+    padding: 15px;
+    color: #fff;
+}
+
+#carouselPromo .carousel-caption h5 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ffcc00; /* tom amarelo para destacar o título */
+}
+
+#carouselPromo .carousel-caption p {
+    font-size: 18px;
+    margin-top: 5px;
+    color: #f0f0f0;
+}
+
+/* BUSCA - centralizada e com espaçamento */
+.busca-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+    margin-bottom: 30px;
+}
+
+.busca-container input {
+    width: 60%;
+    max-width: 600px;
+    padding: 12px 18px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border 0.3s ease;
+}
+
+.busca-container input:focus {
+    border-color: #328d52;
+    outline: none;
+}
+
+/* GRADE DE PIZZAS */
+.cardapio-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    width: 80%;
+    margin: 0 auto 60px auto;
+}
+
+/* CARD INDIVIDUAL */
+.pizza-card {
+    background-color: #f9f9f9;
+    width: 250px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 15px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pizza-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Imagem da pizza */
+.pizza-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: contain; /* garante que a imagem caiba sem cortar */
+    margin-bottom: 15px;
+    border-radius: 30px;
+}
+
+/* Nome da pizza */
+.pizza-nome {
+    font-size: 1.2rem;
+    color: #328d52;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+/* Ingredientes */
+.pizza-ingredientes {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+/* Preço */
+.pizza-card .preco {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #ff5722;
+}
+@media (max-width: 768px) {
+  .busca-container input {
+    width: 90%;
+  }
+
+  .pizza-card {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .cardapio-grid {
+    gap: 20px;
+  }
+}
+.promocao-card {
+  max-width: 800px;
+  margin: 40px auto;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  background-color: #fff;
+  transition: transform 0.3s ease;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.button:hover {
-  background-color: #e64a19;
-  transform: translateY(-2px);
+.promocao-card:hover {
+  transform: scale(1.02);
 }
 
-/* CONTAINERS CENTRAIS */
-.container {
-  max-width: 1200px;
-  margin: auto;
+.promocao-card img {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+  border-bottom: 1px solid #eee;
+}
+
+.promocao-info {
   padding: 20px;
-}
-
-/* Utilitários */
-.text-center {
   text-align: center;
 }
 
-.promocao-container {
-  width: 80vw !important;
-  max-width: 100% !important;
-  background: #fff;
-  border-radius: 10px;
-  padding: 20px;
-  margin: 20px auto;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+.promocao-nome {
+  font-size: 28px;
+  margin-bottom: 10px;
+  color: #328d52;
 }
 
-.grade-pizzas,
-.grade-bebidas {
+.promocao-descricao {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+.promocao-preco {
+  font-size: 20px;
+  font-weight: bold;
+  color: #d62828;
+}
+.pedido-promocao {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.titulo-promocao {
+  font-size: 32px;
+  color: #328d52;
+  margin-bottom: 20px;
+  margin-top: 40px;
+}
+
+.imagem-promocao {
+  width: 100%;
+  max-width: 600px;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  margin: 0 auto 20px auto;
+  display: block;
+}
+
+.descricao-promocao {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 30px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.grade-pizzas, .grade-bebidas {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 20px;
-  margin: 20px 0;
+  gap: 30px;
+  margin-bottom: 40px;
 }
 
-/* Card de Pizza */
-.card-pizza {
-  width: 250px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
+.card-pizza, .card-bebida {
+  background-color: #f9f9f9;
+  width: 240px;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   padding: 15px;
   text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.3s ease;
   cursor: pointer;
-  background-color: #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.card-pizza img {
+.card-pizza:hover, .card-bebida:hover {
+  transform: translateY(-5px);
+}
+
+.card-pizza img, .card-bebida img {
   width: 100%;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 10px;
+  height: 160px;
+  object-fit: contain;
+  margin-bottom: 12px;
+  border-radius: 12px;
 }
 
-.card-pizza h4 {
-  margin: 10px 0 5px;
-}
-
-.card-pizza .preco {
+.card-pizza h4, .card-bebida span {
+  color: #328d52;
   font-weight: bold;
-  color: #e64a19;
 }
 
-.card-pizza.selecionada {
+.card-pizza p {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 5px 0 10px;
+}
+
+.card-pizza .preco, .card-bebida .preco {
+  font-size: 1rem;
+  color: #d62828;
+  font-weight: bold;
+}
+
+.card-pizza.selecionada, .card-bebida.selecionada {
   border: 2px solid #328d52;
-  box-shadow: 0 0 10px rgba(50, 141, 82, 0.4);
-}
-.card-pizza, .card-bebida {
-  flex-shrink: 0;
-}
-/* Card de Bebida */
-.card-bebida {
-  width: 180px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
-  background-color: #f8f8f8;
+  box-shadow: 0 0 10px rgba(50, 141, 82, 0.3);
 }
 
-.card-bebida img {
-  width: 100%;
-  height: 100px;
-  object-fit: cover;
-  margin-bottom: 5px;
-  border-radius: 6px;
-}
-
-.card-bebida.selecionada {
-  border: 2px solid #328d52;
-  box-shadow: 0 0 10px rgba(50, 141, 82, 0.4);
-}
-
-/* Botão */
 .btn-finalizar {
-  margin-top: 30px;
   background-color: #328d52;
-  color: white;
-  padding: 15px 25px;
+  color: #fff;
+  padding: 15px 30px;
+  font-size: 1.2rem;
   border: none;
-  font-size: 1.1em;
-  font-weight: bold;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
 .btn-finalizar:hover {
-  background-color: #276c3f;
+  background-color: #26793f;
 }
-
-/* Classes para páginas específicas como login, cadastro, cardápio, checkout etc. */
-@import url("sections/login.css");
-@import url("sections/registro.css");
-@import url("sections/cardapio.css");
-@import url("sections/checkout.css");
-@import url("sections/promocao.css");
-@import url("sections/carrossel.css");
-
-/* Media Queries gerais */
 @media (max-width: 768px) {
-  header nav {
-    flex-direction: column;
-    gap: 15px;
+  .imagem-promocao {
+    height: 200px;
+  }
+
+  .pedido-promocao {
+    padding: 10px;
+  }
+
+  .grade-pizzas, .grade-bebidas {
+    gap: 20px;
+  }
+
+  .card-pizza, .card-bebida {
+    width: 100%;
+    max-width: 280px;
   }
 }
 
-/* Aviso: Este CSS foi revisado para evitar regras duplicadas e conflitos. Componentes específicos foram modularizados em arquivos separados para facilitar a manutenção. */
+/* Ajustes para o checkout */
+
+.checkout-container {
+  max-width: 800px;
+  margin: 60px auto 40px auto; /* distância do header */
+  padding: 20px;
+  background-color: #fff;
+}
+
+.nota-fiscal h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 28px;
+  color: #333;
+}
+
+.bloco-nota {
+  border: 1px solid #ccc;
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  background-color: #fefefe;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.tabela-nota {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.tabela-nota th,
+.tabela-nota td {
+  border-bottom: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.tabela-nota th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.total-final {
+  text-align: right;
+  font-size: 1.1rem;
+  margin-top: 15px;
+  font-weight: bold;
+  color: #328d52;
+}
+
+.botoes-final {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.btn-confirmar, .btn-voltar {
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.btn-confirmar {
+  background-color: #328d52;
+  color: white;
+}
+
+.btn-confirmar:hover {
+  background-color: #26793f;
+}
+
+.btn-voltar {
+  background-color: #ccc;
+  text-decoration: none;
+  color: #333;
+}
+
+.btn-voltar:hover {
+  background-color: #bbb;
+}

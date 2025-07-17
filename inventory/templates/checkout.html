@@ -3,52 +3,73 @@
 {% load carrinho_filters %}
 
 {% block content %}
-<div class="checkout-container">
+<div class="checkout-container nota-fiscal">
   <h2>🧾 Confirmação do Pedido</h2>
 
   <!-- DADOS DO CLIENTE -->
-  <div class="dados-cliente">
-    <h3>👤 Seus dados</h3>
+  <div class="dados-cliente bloco-nota">
+    <h3>👤 Dados do Cliente</h3>
     <p><strong>Nome:</strong> {{ request.user.first_name }} {{ request.user.last_name }}</p>
     <p><strong>Email:</strong> {{ request.user.email }}</p>
     <p><strong>Endereço:</strong> {{ request.user.cliente.endereco_entrega }}, Nº {{ request.user.cliente.numero }}</p>
   </div>
 
-  <!-- RESUMO DO CARRINHO -->
-  <div class="resumo-pedido">
+  <!-- RESUMO DO PEDIDO -->
+  <div class="resumo-pedido bloco-nota">
     <h3>📦 Itens do Pedido</h3>
-    <ul>
-      {% for item in carrinho %}
-        <li>
-          {% if item.tipo == 'pizza' %}
-            🍕 {{ item.pizza1.nome }}
-            {% if item.pizza2 %}+ {{ item.pizza2.nome }}{% endif %}
-            — <strong>R$ {{ item.total }}</strong>
-          {% elif item.tipo == 'bebida' %}
-            🥤 {{ item.bebida.nome }} x {{ item.quantidade }}
-            — <strong>R$ {{ item.total }}</strong>
-          {% endif %}
-        </li>
-      {% endfor %}
-    </ul>
+    <table class="tabela-nota">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Qtd</th>
+          <th>Preço</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in carrinho %}
+        <tr>
+          <td>
+            {% if item.tipo == 'pizza' %}
+              🍕 {{ item.pizza1.nome }}{% if item.pizza2 %} + {{ item.pizza2.nome }}{% endif %}
+            {% elif item.tipo == 'bebida' %}
+              🥤 {{ item.bebida.nome }}
+            {% endif %}
+          </td>
+          <td>
+            {% if item.tipo == 'bebida' %}
+              {{ item.quantidade }}
+            {% else %}
+              1
+            {% endif %}
+          </td>
+          <td>R$ {{ item.total }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
-    <!-- TOTAL GERAL -->
     <p class="total-final">
-      <strong>Total:</strong>
-      R$ {{ carrinho|calc_total }}
+      <strong>Total:</strong> R$ {{ carrinho|calc_total }}
     </p>
   </div>
 
   <!-- BOTÕES -->
-  <div class="botoes-final">
-    {{ carrinho|json_script:"pedido_final_json" }}
-    <form method="post" action="{% url 'finalizar_pedido' %}">
-      {% csrf_token %}
-      <input type="hidden" name="pedido_final" value="">
-      <button type="submit" class="btn-confirmar">✅ Confirmar Pedido</button>
-      <a href="{% url 'carrinho' %}" class="btn-voltar">🔙 Voltar ao Carrinho</a>
-    </form>
-  </div>
+<div class="botoes-final">
+  {{ carrinho|json_script:"pedido_final_json" }}
+  <form method="post" action="{% url 'finalizar_pedido' %}">
+    {% csrf_token %}
+    <input type="hidden" name="pedido_final" value="">
+    {% if promocao %}
+      <input type="hidden" name="promocao_slug" value="{{ promocao.slug }}">
+    {% endif %}
+    <button type="submit" class="btn-confirmar">✅ Confirmar Pedido</button>
+  </form>
+
+  {% if promocao %}
+    <a class="btn-voltar" href="{% url 'pedido_promocao' promocao.slug %}">Voltar</a>
+  {% else %}
+    <a class="btn-voltar" href="{% url 'carrinho' %}">Voltar</a>
+{% endif %}
 </div>
 
 <script>

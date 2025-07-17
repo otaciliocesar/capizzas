@@ -20,7 +20,7 @@ from django.views.decorators.http import require_http_methods
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from utils.email import enviar_email
-  
+from django.urls import reverse
 
 class SobrePageView(TemplateView):
     template_name = 'sobre.html'
@@ -192,19 +192,27 @@ def login_cliente_required(view_func):
 
 @login_cliente_required
 def carrinho_view(request):
-    cliente = request.user.cliente  # Assumindo que o cliente está logado
+    cliente = request.user.cliente
     pizzas = Pizza.objects.all()
-    bebidas = Bebida.objects.all()  # <-- Adicionado
+    bebidas = Bebida.objects.all()
+    carrinho = request.session.get("carrinho", [])
 
     if request.method == 'POST':
         form = CompraForm(request.POST)
         if form.is_valid():
             compra = form.save(commit=False)
             compra.cliente = cliente
+
+            # Lógica de preço com base na pizza_1 e pizza_2
             preco1 = compra.pizza_1.preco
             preco2 = compra.pizza_2.preco if compra.pizza_2 else 0
             compra.preco_final = max(preco1, preco2)
+
             compra.save()
+
+            # Limpa o carrinho da sessão após salvar
+            request.session["carrinho"] = []
+
             return redirect('pagina_de_sucesso')
     else:
         form = CompraForm()
@@ -212,8 +220,10 @@ def carrinho_view(request):
     return render(request, 'carrinho.html', {
         'form': form,
         'pizzas': pizzas,
-        'bebidas': bebidas  # <-- Adicionado no contexto
+        'bebidas': bebidas,
+        'carrinho': carrinho,
     })
+
 
 
 @login_cliente_required
@@ -227,7 +237,14 @@ def checkout_view(request):
 
         try:
             carrinho = json.loads(carrinho_json)
-            request.session["carrinho"] = carrinho  # Salva na sessão
+            request.session["carrinho"] = carrinho  # Salva o carrinho na sessão
+
+            # Opcional: salvar slug da promoção na sessão, se enviado no POST
+            promocao_slug = request.POST.get("promocao_slug")
+            if promocao_slug:
+                request.session["promocao_slug"] = promocao_slug
+            else:
+                request.session.pop("promocao_slug", None)
 
             cliente = request.user.cliente
             total = sum(float(item["total"]) for item in carrinho)
@@ -258,17 +275,35 @@ def checkout_view(request):
             destinatario = request.user.email
             texto = f"Olá {cliente.nome}, recebemos seu pedido! Total: R$ {total:.2f}"
 
-
             messages.success(request, "Pedido confirmado! Confirmação enviada por e-mail.")
-            return redirect("checkout")  # Ou para outra página após confirmação
+            return redirect("checkout")  # Ou outra página após confirmação
 
         except json.JSONDecodeError:
             messages.error(request, "Erro ao processar o carrinho.")
             return redirect("carrinho")
 
+    # GET
     carrinho = request.session.get("carrinho", [])
-    return render(request, "checkout.html", {"carrinho": carrinho})
+    promocao_slug = request.session.get("promocao_slug")
 
+    # Definir URL de voltar sempre
+    if promocao_slug:
+        voltar_url = reverse('pedido_promocao', args=[promocao_slug])
+    else:
+        voltar_url = reverse('carrinho')
+
+    promocao = None
+    if promocao_slug:
+        try:
+            promocao = Promocao.objects.get(slug=promocao_slug)
+        except Promocao.DoesNotExist:
+            promocao = None
+
+    return render(request, "checkout.html", {
+        "carrinho": carrinho,
+        "promocao": promocao,
+        "voltar_url": voltar_url,
+    })
 
 
 
@@ -352,6 +387,7 @@ def finalizar_pedido(request):
         enviar_email("contato@capizzas.com", "[Cópia Interna] " + assunto, texto, html_email)
 
         messages.success(request, "Pedido finalizado com sucesso! Confirmação enviada por e-mail.")
+        request.session.pop('promocao_slug', None)
         return redirect('cardapio')
 
     except Exception as e:
@@ -387,11 +423,14 @@ def pedido_promocao(request, slug):
     promocao = get_object_or_404(Promocao, slug=slug, ativa=True)
     bebidas = Bebida.objects.all()
     pizzas = promocao.pizzas.all()
+    carrinho = request.session.get("carrinho", [])  # <-- incluir para consistência
 
+    request.session['promocao_slug'] = promocao.slug
     return render(request, 'pedido_promocao.html', {
         'promocao': promocao,
         'pizzas': pizzas,
         'bebidas': bebidas,
+        'carrinho': carrinho,
     })
 
 @login_cliente_required

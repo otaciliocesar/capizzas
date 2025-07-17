@@ -2,13 +2,10 @@
 {% load static %}
 
 {% block content %}
-<div style="width: 100vw; display: flex; justify-content: center;">
-<div class="promocao-container">
-  <h2>🍕 Promoção: {{ promocao.titulo }}</h2>
-  <p>{{ promocao.descricao }}</p>
-
-  <!-- Imagem da promoção -->
-  <img src="{{ promocao.imagem.url }}" alt="{{ promocao.titulo }}" style="max-width: 100%; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+<div class="pedido-promocao">
+  <h2 class="titulo-promocao">🍕 Promoção: {{ promocao.titulo }}</h2>
+  <img class="imagem-promocao" src="{{ promocao.imagem.url }}" alt="{{ promocao.titulo }}">
+  <p class="descricao-promocao">{{ promocao.descricao }}</p>
 
   <h3>Escolha um sabor para sua pizza:</h3>
 
@@ -29,19 +26,20 @@
     {% for bebida in promocao.bebidas.all %}
     <div class="card-bebida" onclick="toggleBebidaSelecionada('{{ bebida.id }}', '{{ bebida.nome }}', '{{ bebida.preco }}', this)">
       <img src="{{ bebida.imagem.url }}" alt="{{ bebida.nome }}">
-      <span>{{ bebida.nome }} - R$ {{ bebida.preco }}</span>
+      <span>{{ bebida.nome }}</span>
+      <p></p>
+      <span class="preco">R$ {{ bebida.preco }}</span>
     </div>
     {% endfor %}
   </div>
   {% endif %}
 
   <!-- Formulário para enviar promoção ao carrinho -->
-  <form method="post" action="{% url 'checkout' %}">
+    <form method="post" action="{% url 'checkout' %}">
     {% csrf_token %}
     <input type="hidden" name="pedido_final" id="pedido_final" value='{{ carrinho|safe }}'>
     <button type="submit" class="btn-finalizar" onclick="enviarPedido()">🛒 Escolher essa promoção</button>
   </form>
-</div>
 </div>
 
 
