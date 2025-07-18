@@ -25,3 +25,5 @@ Thumbs.db
 
 # Arquivos estáticos coletados (se usar collectstatic)
 staticfiles/
+
+*.env

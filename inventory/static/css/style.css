@@ -137,6 +137,9 @@ header nav a:hover {
   display: block;
 }
 
+.produtos-menu {
+  font-size: 1.2rem;
+}
 nav form {
   display: inline;
 }
@@ -926,7 +929,7 @@ footer .last-update {
 
 .registro-container .form-group {
   margin-bottom: 20px;
-  text-align: left;
+  text-align: center;
 }
 
 .registro-container .form-group label {
@@ -1158,32 +1161,76 @@ footer .last-update {
   margin: 0 auto 60px auto;
 }
 
-.registro-container {
-  flex: 1 1 450px;
-  max-width: 500px;
+
+.grid-bebidas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+.cadastro-bebidas-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+.formulario-bebida {
   background-color: #f9f9f9;
   border: 1px solid #ddd;
   border-radius: 12px;
-  padding: 30px 25px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 50px;
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+}
+.bebidas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  max-width: 1000px;
+  width: auto;
+  margin: 0 auto;
+}
+
+.bebida-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   text-align: center;
 }
 
-.registro-container h2 {
+.bebidas-lista h2 {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
   color: #328d52;
-  font-size: 1.9rem;
-  margin-bottom: 25px;
+}
+
+.formulario-bebida .submit-btn {
+  margin-top: 20px;
+  align-self: center; /* Isso já centraliza horizontalmente dentro do flex-column */
+}
+
+.filtro-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .filtro-input {
   width: 100%;
-  max-width: 450px;
-  padding: 12px 18px;
-  font-size: 1rem;
-  border: 2px solid #ccc;
+  max-width: 500px;
+  padding: 10px;
+  font-size: 16px;
+  margin: 10px 0 20px;
   border-radius: 8px;
-  margin-bottom: 25px;
-  transition: border-color 0.3s ease;
+  border: 1px solid #ccc;
 }
 
 .filtro-input:focus {
@@ -1356,33 +1403,4 @@ footer .last-update {
   padding: 1rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-/* Dropdown */
-nav .dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-nav .dropdown-menu {
-  display: none;
-  position: absolute;
-  background-color: #fff;
-  min-width: 160px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  z-index: 1;
-}
-
-nav .dropdown:hover .dropdown-menu {
-  display: block;
-}
-
-nav .dropdown-menu li a {
-  color: #333;
-  padding: 12px 16px;
-  display: block;
-  text-decoration: none;
-}
-
-nav .dropdown-menu li a:hover {
-  background-color: #f2f2f2;
 }

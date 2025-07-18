@@ -31,14 +31,14 @@
     <a href="{% url 'sobre' %}">Sobre</a>
 
     {% if user.is_authenticated and user.is_superuser %}
-      <li class="dropdown">
-  <a href="#">Produtos ▾</a>
-  <ul class="dropdown-menu">
-    <li><a href="{% url 'cadastropizza' %}">Pizzas</a></li>
-    <li><a href="{% url 'cadastrobebidas' %}">Bebidas</a></li>
-    <li><a href="">Diversos</a></li>
-  </ul>
-</li>
+<div class="user-menu produtos-menu" tabindex="0" aria-haspopup="true" aria-expanded="false">
+  Produtos
+  <div class="user-dropdown" role="menu" aria-label="Menu de Produtos">
+    <a href="{% url 'cadastropizza' %}" role="menuitem">Pizzas</a>
+    <a href="{% url 'cadastrobebidas' %}" role="menuitem">Bebidas</a>
+    <a href="" role="menuitem">Diversos</a>
+  </div>
+</div>
       <a href="{% url 'cadastropromocoes' %}">Gerenciar promoções</a>
     {% endif %}
 

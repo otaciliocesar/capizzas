@@ -42,83 +42,37 @@ def Cardapio(request):
     pizzas = Pizza.objects.all()
     return render(request, 'cardapio.html', {'pizzas': pizzas})
 
+def login_cliente_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f'/login/?next={request.path}')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
+
+@login_cliente_required
 def cadastro_pizza(request):
     if not request.user.is_superuser:
-        return redirect('base')  # Apenas admin acessa
-
-    pizza_form = PizzaForm()
-    bebida_form = BebidaForm()
-
-    bebida_id = request.GET.get('editar_bebida')
-    bebida_instance = Bebida.objects.filter(id=bebida_id).first() if bebida_id else None
-    if bebida_instance:
-        bebida_form = BebidaForm(instance=bebida_instance)
-
-    if request.method == 'POST':
-        if 'nome' in request.POST and 'ingredientes' in request.POST:
-            # Cadastro ou edição de pizza
-            pizza_id = request.POST.get('pizza_id')
-            pizza_instance = Pizza.objects.filter(id=pizza_id).first() if pizza_id else None
-            pizza_form = PizzaForm(request.POST, request.FILES, instance=pizza_instance)
-            if pizza_form.is_valid():
-                pizza_form.save()
-                return redirect('cadastropizza')
-        else:
-            # Cadastro ou edição de bebida
-            bebida_form = BebidaForm(request.POST, request.FILES, instance=bebida_instance)
-            if bebida_form.is_valid():
-                bebida_form.save()
-                return redirect('cadastropizza')
-
-    pizzas = Pizza.objects.all().order_by('nome')
-    bebidas = Bebida.objects.all().order_by('nome')
-
-    context = {
-        'form': pizza_form,
-        'bebida_form': bebida_form,
-        'pizzas': pizzas,
-        'bebidas': bebidas,
-        'bebida_editando': bebida_instance,  # para exibir "Editando bebida" no template se necessário
-    }
-    return render(request, 'cadastropizza_form.html', context)
-
-
-
-def cadastrar_bebida(request):
-    if not request.user.is_superuser:
         return redirect('base')
 
+    pizza_id = request.GET.get('editar_pizza')
+    pizza_instance = get_object_or_404(Pizza, id=pizza_id) if pizza_id else None
+
     if request.method == 'POST':
-        form = BebidaForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('cadastropizza')
-    return redirect('cadastropizza')
-
-
-def editar_bebida(request, id):
-    if not request.user.is_superuser:
-        return redirect('base')
-
-    bebida = get_object_or_404(Bebida, id=id)
-    if request.method == 'POST':
-        form = BebidaForm(request.POST, request.FILES, instance=bebida)
+        form = PizzaForm(request.POST, request.FILES, instance=pizza_instance)
         if form.is_valid():
             form.save()
             return redirect('cadastropizza')
     else:
-        form = BebidaForm(instance=bebida)
-    return render(request, 'editar_bebida.html', {'form': form})
+        form = PizzaForm(instance=pizza_instance)
 
-
-def excluir_bebida(request, id):
-    if not request.user.is_superuser:
-        return redirect('base')
-
-    bebida = get_object_or_404(Bebida, id=id)
-    bebida.delete()
-    return redirect('cadastropizza')
+    pizzas = Pizza.objects.all().order_by('nome')
+    return render(request, 'cadastropizza_form.html', {
+        'form': form,
+        'pizzas': pizzas,
+        'pizza_editando': pizza_instance
+    })
 
 
 def editar_pizza(request, id):
@@ -195,13 +149,6 @@ def logout_cliente(request):
     return redirect('base')  # Ou para onde quiser redirecionar após o logout
 
 
-def login_cliente_required(view_func):
-    @wraps(view_func)
-    def _wrapped_view(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return redirect(f'/login/?next={request.path}')
-        return view_func(request, *args, **kwargs)
-    return _wrapped_view
 
 
 @login_cliente_required
@@ -470,17 +417,54 @@ def clientes_pedidos(request):
     return render(request, 'clientespedidos.html', {'pedidos': pedidos})
 
 
-@login_cliente_required
-def cadastro_bebidas_view(request):
-    if not request.user.is_superuser:
-        return redirect('home')
 
-    form = BebidaForm()
+@login_cliente_required
+def cadastro_bebidas(request):
+    if not request.user.is_superuser:
+        return redirect('base')
+
+    bebida_instance = None
+
     if request.method == 'POST':
-        form = BebidaForm(request.POST, request.FILES)
+        bebida_id = request.POST.get('bebida_id')
+        if bebida_id:
+            bebida_instance = get_object_or_404(Bebida, id=bebida_id)
+        form = BebidaForm(request.POST, request.FILES, instance=bebida_instance)
         if form.is_valid():
             form.save()
             return redirect('cadastrobebidas')
+    else:
+        bebida_id = request.GET.get('editar_bebida')
+        if bebida_id:
+            bebida_instance = get_object_or_404(Bebida, id=bebida_id)
+        form = BebidaForm(instance=bebida_instance)
 
     bebidas = Bebida.objects.all().order_by('nome')
-    return render(request, 'cadastrobebidas_form.html', {'form': form, 'bebidas': bebidas})
+    return render(request, 'cadastrobebidas_form.html', {
+        'bebida_form': form,
+        'bebidas': bebidas,
+        'bebida_editando': bebida_instance
+    })
+
+@login_cliente_required
+def excluir_bebida(request, id):
+    if not request.user.is_superuser:
+        return redirect('base')
+    bebida = get_object_or_404(Bebida, id=id)
+    bebida.delete()
+    return redirect('cadastrobebidas')
+
+@login_cliente_required
+def editar_bebida(request, id):
+    if not request.user.is_superuser:
+        return redirect('base')
+
+    bebida = get_object_or_404(Bebida, id=id)
+    if request.method == 'POST':
+        form = BebidaForm(request.POST, request.FILES, instance=bebida)
+        if form.is_valid():
+            form.save()
+            return redirect('cadastropizza')
+    else:
+        form = BebidaForm(instance=bebida)
+    return render(request, 'editar_bebida.html', {'form': form})

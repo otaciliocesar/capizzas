@@ -6,15 +6,23 @@
 
   <!-- Formulário de cadastro de pizza -->
   <div class="registro-container">
-    <h2>Cadastrar Pizza</h2>
+    <h2>{% if pizza_editando %}Editar Pizza{% else %}Cadastrar Pizza{% endif %}</h2>
+    
     {% if error %}
       <p class="error-message">{{ error }}</p>
     {% endif %}
+
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
       {{ form.as_p }}
-      <button type="submit" class="submit-btn">Registrar</button>
+      <button type="submit" class="submit-btn">
+        {% if pizza_editando %}Salvar Alterações{% else %}Registrar Pizza{% endif %}
+      </button>
     </form>
+
+    {% if pizza_editando %}
+      <p>🛠️ Editando pizza: <strong>{{ pizza_editando.nome }}</strong></p>
+    {% endif %}
 
     <h2 style="margin-top:40px;">Pizzas Cadastradas</h2>
     <input type="text" id="filtro" placeholder="🔍 Buscar pizza..." class="filtro-input">
@@ -29,7 +37,7 @@
           <img src="{{ pizza.imagem.url }}" alt="{{ pizza.nome }}" class="pizza-imagem">
         {% endif %}
         <div class="acoes-pizza">
-          <a href="{% url 'editar_pizza' pizza.id %}" class="btn-editar">✏️ Editar</a>
+          <a href="?editar_pizza={{ pizza.id }}" class="btn-editar">✏️ Editar</a>
           <a href="{% url 'excluir_pizza' pizza.id %}" class="btn-excluir" onclick="return confirm('Tem certeza que deseja excluir esta pizza?')">🗑️ Excluir</a>
         </div>
       </li>
@@ -38,9 +46,6 @@
       {% endfor %}
     </ul>
   </div>
-
-  
-
 </div>
 
 <script>
@@ -55,6 +60,5 @@
       item.style.display = texto.includes(termo) ? "" : "none";
     });
   });
-
 </script>
-{% end block %}
+{% endblock %}
