@@ -889,7 +889,11 @@ footer .last-update {
   transition: background-color 0.3s ease;
   align-items: center;
 }
-
+.sucesso-mensagem {
+  color: green;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
 .submit-btn:hover {
   background-color: #26703f;
 }

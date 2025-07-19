@@ -503,3 +503,21 @@ def excluir_diverso(request, produto_id):
     produto = get_object_or_404(ProdutoDiverso, id=produto_id)
     produto.delete()
     return redirect('cadastrodiversos')
+
+@login_cliente_required
+def editar_perfil(request):
+    cliente = get_object_or_404(Cliente, user=request.user)
+    sucesso = False
+
+    if request.method == 'POST':
+        form = ClienteForm(request.POST, instance=cliente)
+        if form.is_valid():
+            form.save()
+            sucesso = True
+    else:
+        form = ClienteForm(instance=cliente)
+
+    return render(request, 'editar_perfil.html', {
+        'form': form,
+        'sucesso': sucesso
+    })
