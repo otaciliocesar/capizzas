@@ -127,13 +127,15 @@ header nav a:hover {
   font-weight: normal;
   transition: background-color 0.3s ease;
 }
-
+.user-menu:hover .user-dropdown {
+  display: block;
+}
 .user-dropdown a:hover {
   background-color: #26793f;
 }
 
 /* Mostrar dropdown ao passar o mouse */
-.user-menu:hover .user-dropdown {
+.dropdown:hover .user-dropdown {
   display: block;
 }
 
@@ -1002,6 +1004,13 @@ footer .last-update {
   font-size: 1.8rem;
   margin-bottom: 30px;
 }
+.titulo-cadastro,
+.titulo-lista {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #328d52;
+}
 
 .form-promocao .form-group {
   margin-bottom: 20px;
@@ -1152,13 +1161,9 @@ footer .last-update {
   position: relative;
 }
 .cadastro-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 50px;
-  padding: 40px 20px 80px 20px;
-  max-width: 1200px;
-  margin: 0 auto 60px auto;
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 20px;
 }
 
 
@@ -1225,7 +1230,7 @@ footer .last-update {
 
 .filtro-input {
   width: 100%;
-  max-width: 500px;
+  max-width: 100%;
   padding: 10px;
   font-size: 16px;
   margin: 10px 0 20px;
@@ -1238,14 +1243,37 @@ footer .last-update {
   outline: none;
 }
 
+.formulario-pizza {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.formulario-pizza p {
+  width: 100%;
+  max-width: 500px;
+  text-align: left;
+  margin-bottom: 15px;
+}
+
+.formulario-pizza input,
+.formulario-pizza select,
+.formulario-pizza textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-top: 5px;
+}
+
 .lista-pizzas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+  justify-content: center;
   list-style: none;
   padding: 0;
-  max-height: 320px;
-  overflow-y: auto;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background-color: white;
+  margin-top: 20px;
 }
 
 .pizza-item {
@@ -1365,10 +1393,13 @@ footer .last-update {
     padding: 20px 15px 50px 15px;
   }
 
-  .registro-container {
-    max-width: 100%;
-    margin: 0 auto 40px auto;
-  }
+ .registro-container {
+  background-color: #f8f8f8;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  text-align: center;
+}
 
   .pizza-item {
     flex-direction: column;

@@ -2,12 +2,13 @@
 {% load static %}
 
 {% block content %}
-<div class="cadastro-bebidas-container">
+<div class="cadastro-wrapper">
 
-  <!-- Formulário -->
-  <div class="formulario-bebida">
-    <h2>Cadastrar Bebida</h2>
-    <form method="post" enctype="multipart/form-data" action="{% url 'cadastrobebidas' %}">
+  <!-- Formulário de cadastro de bebida -->
+  <div class="registro-container">
+    <h2 class="titulo-cadastro">{% if bebida_editando %}Editar Bebida{% else %}Cadastrar Bebida{% endif %}</h2>
+
+    <form method="post" enctype="multipart/form-data" action="{% url 'cadastrobebidas' %}" class="formulario-pizza">
       {% csrf_token %}
       {% if bebida_editando %}
         <input type="hidden" name="bebida_id" value="{{ bebida_editando.id }}">
@@ -16,27 +17,26 @@
       <button type="submit" class="submit-btn">
         {% if bebida_editando %}Salvar Alterações{% else %}Registrar Bebida{% endif %}
       </button>
+
       {% if bebida_editando %}
-        <p>🛠️ Editando bebida: <strong>{{ bebida_editando.nome }}</strong></p>
+        <p class="editando-info">🛠️ Editando bebida: <strong>{{ bebida_editando.nome }}</strong></p>
       {% endif %}
     </form>
   </div>
 
   <!-- Lista de bebidas -->
-  <div class="bebidas-lista">
-    <h2>Bebidas Cadastradas</h2>
-    <div class="filtro-container">
-  <input type="text" id="filtro-bebida" placeholder="🔍 Buscar bebida..." class="filtro-input">
-</div>
+  <div class="lista-container">
+    <h2 class="titulo-lista">Bebidas Cadastradas</h2>
+    <input type="text" id="filtro-bebida" placeholder="🔍 Buscar bebida..." class="filtro-input">
 
-    <div class="bebidas-grid" id="lista-bebidas">
+    <div class="lista-pizzas" id="lista-bebidas">
       {% for bebida in bebidas %}
-        <div class="card-bebida">
-          <strong>{{ bebida.nome }}</strong><br>
-          <span class="preco">R$ {{ bebida.preco }}</span><br>
+        <div class="pizza-card">
           {% if bebida.imagem %}
-            <img src="{{ bebida.imagem.url }}" alt="{{ bebida.nome }}" class="bebida-imagem">
+            <img src="{{ bebida.imagem.url }}" alt="{{ bebida.nome }}">
           {% endif %}
+          <h3>{{ bebida.nome }}</h3>
+          <p class="preco">R$ {{ bebida.preco }}</p>
           <div class="acoes-pizza">
             <a href="?editar_bebida={{ bebida.id }}" class="btn-editar">✏️ Editar</a>
             <a href="{% url 'excluir_bebida' bebida.id %}" class="btn-excluir" onclick="return confirm('Deseja excluir esta bebida?')">🗑️ Excluir</a>
@@ -55,7 +55,7 @@
   const listaBebida = document.getElementById("lista-bebidas");
   filtroBebida.addEventListener("keyup", function () {
     const termo = filtroBebida.value.toLowerCase();
-    const cards = listaBebida.getElementsByClassName("card-bebida");
+    const cards = listaBebida.getElementsByClassName("pizza-card");
     Array.from(cards).forEach(function (card) {
       const texto = card.textContent.toLowerCase();
       card.style.display = texto.includes(termo) ? "" : "none";

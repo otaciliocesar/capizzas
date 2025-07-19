@@ -5,14 +5,14 @@ from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.contrib import messages
 from decimal import Decimal
-from .forms import PizzaForm, ClienteForm, CompraForm, BebidaForm, PromocaoForm
+from .forms import PizzaForm, ClienteForm, CompraForm, BebidaForm, PromocaoForm, ProdutoDiversoForm
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login
 from functools import wraps
 from django.views.decorators.http import require_http_methods, require_POST
 from django.template.loader import render_to_string
 from django.db import transaction
-from .models import Promocao, Cliente
+from .models import Promocao, Cliente, ProdutoDiverso
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -468,3 +468,38 @@ def editar_bebida(request, id):
     else:
         form = BebidaForm(instance=bebida)
     return render(request, 'editar_bebida.html', {'form': form})
+
+@login_cliente_required
+def cadastro_produtos_diversos(request):
+    produto_editando = None
+    error = None
+
+    if 'editar_produto' in request.GET:
+        produto_editando = get_object_or_404(ProdutoDiverso, id=request.GET.get('editar_produto'))
+
+    if request.method == 'POST':
+        if produto_editando:
+            form = ProdutoDiversoForm(request.POST, request.FILES, instance=produto_editando)
+        else:
+            form = ProdutoDiversoForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('cadastrodiversos')  # nome da url
+        else:
+            error = "Erro ao salvar o produto. Verifique os dados."
+    else:
+        form = ProdutoDiversoForm(instance=produto_editando)
+
+    produtos = ProdutoDiverso.objects.all()
+
+    return render(request, 'cadastrodiversos_form.html', {
+        'form': form,
+        'produtos': produtos,
+        'produto_editando': produto_editando,
+        'error': error
+    })
+
+def excluir_diverso(request, produto_id):
+    produto = get_object_or_404(ProdutoDiverso, id=produto_id)
+    produto.delete()
+    return redirect('cadastrodiversos')

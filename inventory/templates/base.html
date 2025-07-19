@@ -29,20 +29,22 @@
     <a href="{% url 'promocoes' %}">Promoções</a>
     <a href="{% url 'localizacao' %}">Localização</a>
     <a href="{% url 'sobre' %}">Sobre</a>
+    <a href="{% url 'cadastropromocoes' %}">Gerir Promocões</a>
 
     {% if user.is_authenticated and user.is_superuser %}
-<div class="user-menu produtos-menu" tabindex="0" aria-haspopup="true" aria-expanded="false">
-  Produtos
-  <div class="user-dropdown" role="menu" aria-label="Menu de Produtos">
-    <a href="{% url 'cadastropizza' %}" role="menuitem">Pizzas</a>
-    <a href="{% url 'cadastrobebidas' %}" role="menuitem">Bebidas</a>
-    <a href="" role="menuitem">Diversos</a>
-  </div>
-</div>
-      <a href="{% url 'cadastropromocoes' %}">Gerenciar promoções</a>
+    <div class="dropdown">
+    <div class="user-menu produtos-menu" tabindex="0" aria-haspopup="true" aria-expanded="false"> 
+      Produtos
+    </div>     
+    <div class="user-dropdown" role="menu" aria-label="Menu de Produtos">
+      <a href="{% url 'cadastropizza' %}" role="menuitem">Pizzas</a>
+      <a href="{% url 'cadastrobebidas' %}" role="menuitem">Bebidas</a>
+      <a href="{% url 'cadastrodiversos' %}" role="menuitem">Diversos</a>
+    </div>
+    </div>    
     {% endif %}
 
-    <a href="{% url 'carrinho' %}" style="color: white; text-decoration: none; position: relative;">Fazer pedido</a>
+    
 
     {% if user.is_authenticated %}
       <div class="user-menu" tabindex="0" aria-haspopup="true" aria-expanded="false">

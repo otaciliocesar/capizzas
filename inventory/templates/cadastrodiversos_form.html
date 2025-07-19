@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="cadastro-wrapper">
+
+  <!-- Formulário de cadastro de produto diverso -->
+  <div class="registro-container">
+    <h2 class="titulo-cadastro">{% if produto_editando %}Editar Produto{% else %}Cadastrar Produto{% endif %}</h2>
+
+    {% if error %}
+      <p class="error-message">{{ error }}</p>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="formulario-pizza">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="submit-btn">
+        {% if produto_editando %}Salvar Alterações{% else %}Registrar Produto{% endif %}
+      </button>
+    </form>
+
+    {% if produto_editando %}
+      <p class="editando-info">🛠️ Editando: <strong>{{ produto_editando.nome }}</strong></p>
+    {% endif %}
+  </div>
+
+  <!-- Lista de produtos diversos -->
+  <div class="lista-container">
+    <h2 class="titulo-lista">Produtos Diversos Cadastrados</h2>
+    <input type="text" id="filtro" placeholder="🔍 Buscar produto..." class="filtro-input">
+
+    <ul id="lista-pizzas" class="lista-pizzas">
+      {% for produto in produtos %}
+      <li class="pizza-card">
+        {% if produto.imagem %}
+          <img src="{{ produto.imagem.url }}" alt="{{ produto.nome }}">
+        {% endif %}
+        <h3>{{ produto.nome }}</h3>
+        <p class="preco">R$ {{ produto.preco }}</p>
+        <div class="acoes-pizza">
+          <a href="?editar_produto={{ produto.id }}" class="btn-editar">✏️ Editar</a>
+          <a href="{% url 'excluir_diverso' produto.id %}" class="btn-excluir" onclick="return confirm('Tem certeza que deseja excluir este produto?')">🗑️ Excluir</a>
+        </div>
+      </li>
+      {% empty %}
+      <li class="nenhum-item">Nenhum produto cadastrado.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+</div>
+
+<script>
+  const filtro = document.getElementById("filtro");
+  const lista = document.getElementById("lista-pizzas");
+  filtro.addEventListener("keyup", function () {
+    const termo = filtro.value.toLowerCase();
+    const itens = lista.getElementsByTagName("li");
+    Array.from(itens).forEach(function (item) {
+      const texto = item.textContent.toLowerCase();
+      item.style.display = texto.includes(termo) ? "" : "none";
+    });
+  });
+</script>
+{% endblock %}

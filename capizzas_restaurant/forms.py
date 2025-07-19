@@ -1,6 +1,6 @@
 from django import forms  
 from django.contrib.auth.models import User  
-from .models import Pizza, Cliente, Compra, Bebida, Promocao
+from .models import Pizza, Cliente, Compra, Bebida, Promocao, ProdutoDiverso
 
 class PizzaForm(forms.ModelForm):
     class Meta:
@@ -67,3 +67,9 @@ class PromocaoForm(forms.ModelForm):
             'bebidas': forms.CheckboxSelectMultiple,
             'preco': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
+
+
+class ProdutoDiversoForm(forms.ModelForm):
+    class Meta:
+        model = ProdutoDiverso
+        fields = ['nome', 'preco', 'imagem']
