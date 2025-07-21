@@ -1439,3 +1439,47 @@ footer .last-update {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+.etapa-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  font-family: Arial, sans-serif;
+}
+.etapa {
+  margin-bottom: 2rem;
+}
+.grade-bordas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+ .card-borda {
+  cursor: pointer;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 0.5rem;
+  width: 150px;
+  text-align: center;
+  user-select: none;
+  transition: border-color 0.3s ease;
+}
+.card-borda.selecionada {
+  border-color: #328d96;
+  box-shadow: 0 0 8px #328d96;
+}
+.acoes-bebida {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.input-quantidade {
+  width: 50px;
+  text-align: center;
+}
+.card-borda.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+  filter: grayscale(60%);
+}

@@ -1,7 +1,7 @@
 import re
 from django import forms  
 from django.contrib.auth.models import User  
-from .models import Pizza, Cliente, Compra, Bebida, Promocao, ProdutoDiverso
+from .models import Pizza, Cliente, Compra, Bebida, Promocao, ProdutoDiverso, Borda
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
@@ -109,3 +109,14 @@ class ProdutoDiversoForm(forms.ModelForm):
     class Meta:
         model = ProdutoDiverso
         fields = ['nome', 'preco', 'imagem']
+
+
+
+class BordaForm(forms.ModelForm):
+    class Meta:
+        model = Borda
+        fields = ['nome', 'preco']
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nome da borda'}),
+            'preco': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Preço (ex: 5.00)'}),
+        }

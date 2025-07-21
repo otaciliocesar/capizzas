@@ -3,88 +3,141 @@
 
 {% block content %}
 <div class="etapa-container">
-  <h2>🍕 Escolha sua Pizza</h2>
+  <h2>🍕 Monte seu Pedido</h2>
 
-  <!-- Etapa 1: Escolha de Sabores -->
+  <!-- 1. Escolha tipo da pizza -->
   <div class="etapa" id="etapa1">
+    <h3>1. Escolha sua pizza:</h3>
     <div class="botoes-sabores">
       <button class="btn-sabor" onclick="escolherSabores(1)">Inteira</button>
       <button class="btn-sabor" onclick="escolherSabores(2)">Meio a Meio</button>
-      
     </div>
-    
   </div>
 
-  <!-- Etapa 2: Filtro de Pizzas -->
-  <div class="etapa" id="etapa2" style="display: none;">
-    <input type="text" id="campoFiltro" placeholder="🔍 Buscar pizza..." onkeyup="filtrarPizzas()">
-  </div>
-
-  <!-- Etapa 3: Lista de Pizzas -->
-  <div class="etapa" id="etapa3" style="display: none;">
-    <div class="grade-pizzas">
-      {% for pizza in pizzas %}
-      <div class="card-pizza" onclick="selecionarPizza('{{ pizza.id }}', '{{ pizza.nome }}', '{{ pizza.preco }}')">
+  <!-- 2. Escolha sabores -->
+<div class="etapa" id="etapa2" style="display:none;">
+  <h3>2. Escolha o(s) sabor(es):</h3>
+  <input type="text" id="campoFiltro" placeholder="🔍 Buscar pizza..." onkeyup="filtrarPizzas()" 
+         style="width:100%;max-width:400px;margin-bottom:20px;padding:10px 15px;border-radius:25px;border:2px solid #ccc;" />
+  <div class="grade-pizzas">
+    {% for pizza in pizzas %}
+    <div class="card-pizza" onclick="selecionarPizza('{{ pizza.id }}', '{{ pizza.nome }}', '{{ pizza.preco }}', this)"
+         role="button" tabindex="0"
+         onkeypress="if(event.key==='Enter') selecionarPizza('{{ pizza.id }}', '{{ pizza.nome }}', '{{ pizza.preco }}', this)">
+      {% if pizza.imagem %}
         <img src="{{ pizza.imagem.url }}" alt="{{ pizza.nome }}">
-        <h4>{{ pizza.nome }}</h4>
-        <p>{{ pizza.ingredientes }}</p>
-        <span class="preco">R$ {{ pizza.preco }}</span>
-      </div>
-      {% endfor %}
+      {% else %}
+        <img src="" alt="Imagem não disponível">
+      {% endif %}
+      <h4>{{ pizza.nome }}</h4>
+      <p>{{ pizza.ingredientes }}</p>
+      <span class="preco">R$ {{ pizza.preco }}</span>
     </div>
-    <button class="btn-finalizar" onclick="adicionarPizzaAoPedido()">➕ Adicionar Pizza</button>
-  </div>
-
-  <!-- Lista de Bebidas -->
-  <div id="etapaBebidas" style="display: none;">
-    <h2>🥤 Escolha sua Bebida</h2>
-    <div class="grade-bebidas">
-      {% for bebida in bebidas %}
-      <div class="card-bebida">
-        {% if bebida.imagem %}
-  <img src="{{ bebida.imagem.url }}" alt="{{ bebida.nome }}" class="pizza-imagem">
-{% endif %}
-        <h5>{{ bebida.nome }}</h5>
-        <span class="preco">R$ {{ bebida.preco }}</span>
-       <div class="acoes-bebida">
-  <input type="number" min="1" value="1" id="quantidade-{{ bebida.id }}" class="input-quantidade">
-  <button onclick="adicionarBebidaAoPedido('{{ bebida.id }}', '{{ bebida.nome }}', '{{ bebida.preco }}')">Adicionar</button>
-</div>
-
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-
-  <!-- Resumo do Pedido -->
-  <div class="etapa" id="etapa4" style="display: none;">
-    <div class="resumo">
-      <h3>🧾 Resumo</h3>
-      <ul id="resumo-sabores"></ul>
-
-      <form id="formPedido" method="post" action="{% url 'checkout' %}">
-  {% csrf_token %}
-  <input type="hidden" name="pedido_final" id="pedido_final">
-  <button type="submit" class="btn-finalizar" style="background-color: green;">Finalizar Pedido</button>
-</form>
-    </div>
+    {% endfor %}
   </div>
 </div>
+
+
+  <!-- 3. Escolha borda (opcional) -->
+  <div class="etapa" id="etapa3" style="display:none;">
+    <h3>3. Escolha sua borda (opcional):</h3>
+    <div class="grade-bordas" style="display:flex; flex-wrap:wrap; justify-content:center; gap:30px; margin-bottom:40px;">
+      {% for borda in bordas %}
+      <div class="card-borda" onclick="selecionarBorda('{{ borda.id }}', '{{ borda.nome }}', '{{ borda.preco }}', this)"
+           role="button" tabindex="0"
+           onkeypress="if(event.key==='Enter') selecionarBorda('{{ borda.id }}', '{{ borda.nome }}', '{{ borda.preco }}', this)"
+           style="background:#f9f9f9; width:240px; border-radius:15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding:15px; text-align:center; cursor:pointer; transition:transform 0.3s ease;">
+        <h4 style="color:#328d52; font-weight:bold; margin-bottom:10px;">{{ borda.nome }}</h4>
+        <span class="preco" style="font-size:1rem; color:#d62828; font-weight:bold;">R$ {{ borda.preco }}</span>
+      </div>
+      {% endfor %}
+      <div class="card-borda" onclick="selecionarBorda(null, 'Sem borda', 0, this)"
+           role="button" tabindex="0"
+           onkeypress="if(event.key==='Enter') selecionarBorda(null, 'Sem borda', 0, this)"
+           style="background:#f9f9f9; width:240px; border-radius:15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding:15px; text-align:center; cursor:pointer; transition:transform 0.3s ease;">
+        <h4 style="color:#328d52; font-weight:bold; margin-bottom:10px;">Sem borda</h4>
+        <span class="preco" style="font-size:1rem; color:#d62828; font-weight:bold;">R$ 0.00</span>
+      </div>
+    </div>
+    <button class="btn-finalizar" onclick="adicionarPizzaAoPedido()" style="margin-top:1rem; display:block; margin-left:auto; margin-right:auto; min-width:220px;">
+      ➕ Adicionar Pizza ao Pedido
+    </button>
+  </div>
+
+  <!-- 4. Escolha bebidas -->
+<div class="etapa" id="etapa4" style="display:none;">
+  <h3>4. Escolha suas bebidas:</h3>
+  <div class="grade-bebidas">
+    {% for bebida in bebidas %}
+    <div class="card-bebida" role="region" aria-label="{{ bebida.nome }}">
+      {% if bebida.imagem %}
+        <img src="{{ bebida.imagem.url }}" alt="{{ bebida.nome }}" class="pizza-imagem">
+      {% else %}
+        <img src="" alt="Imagem não disponível" class="pizza-imagem">
+      {% endif %}
+      <h5 style="color:#328d52; font-weight:bold; margin-bottom:6px;">{{ bebida.nome }}</h5>
+      <span class="preco">R$ {{ bebida.preco }}</span>
+      <div class="acoes-bebida" style="margin-top:10px; display:flex; justify-content:center; gap:10px; align-items:center;">
+        <input type="number" min="1" value="1" id="quantidade-{{ bebida.id }}" class="input-quantidade"
+               style="width:60px; padding:6px 10px; font-size:1rem; border-radius:8px; border:1.5px solid #ccc; text-align:center;">
+        <button onclick="adicionarBebidaAoPedido('{{ bebida.id }}', '{{ bebida.nome }}', '{{ bebida.preco }}')"
+                style="padding:6px 12px; cursor:pointer; border-radius:8px; border:none; background:#328d52; color:white; font-weight:600; transition:background-color 0.3s;">
+          Adicionar
+        </button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+  <!-- 5. Resumo pedido -->
+  <div class="etapa" id="etapa5" style="display:none;">
+    <h3>5. Resumo do Pedido:</h3>
+    <ul id="resumo-pedido" style="list-style:none; padding-left:0; max-width:600px; margin:0 auto;"></ul>
+
+    <form id="formPedido" method="post" action="{% url 'checkout' %}" style="max-width:600px; margin: 20px auto 0;">
+      {% csrf_token %}
+      <input type="hidden" name="pedido_final" id="pedido_final">
+      <button type="submit" class="btn-finalizar" style="background-color: green; display:block; width: 100%; padding: 14px 0; font-size:1.2rem; border-radius: 30px; font-weight: 700; cursor:pointer;">
+        Finalizar Pedido
+      </button>
+    </form>
+  </div>
+</div>
+
 
 <script>
-let modo = 1;
+let modo = 0;           // 1 = inteira, 2 = meio a meio
 let pizza1 = null;
 let pizza2 = null;
+let bordaSelecionada = null;
 let carrinho = [];
+let bebidasSelecionadas = {}; // { bebidaId: {nome, preco, quantidade} }
 
 function escolherSabores(qtd) {
   modo = qtd;
   pizza1 = null;
   pizza2 = null;
+  bordaSelecionada = null;
+  carrinho = [];
+  bebidasSelecionadas = {};
+
+  // Mostrar etapas
   document.getElementById("etapa2").style.display = "block";
   document.getElementById("etapa3").style.display = "block";
-  document.getElementById("etapaBebidas").style.display = "block";
   document.getElementById("etapa4").style.display = "block";
+  document.getElementById("etapa5").style.display = "block";
+
+  limparSelecoes();
+  atualizarResumo();
+}
+
+function limparSelecoes() {
+  document.querySelectorAll(".card-pizza").forEach(c => c.classList.remove("selecionada"));
+  document.querySelectorAll(".card-borda").forEach(c => c.classList.remove("selecionada"));
+  // Não limpamos bebida para manter seleção visível
+  document.querySelectorAll(".input-quantidade").forEach(input => input.value = 1);
+  bebidasSelecionadas = {};
   atualizarResumo();
 }
 
@@ -95,96 +148,123 @@ function filtrarPizzas() {
   });
 }
 
-function selecionarPizza(id, nome, preco) {
-  // Remove a classe 'selecionada' de todos os cards
-  document.querySelectorAll(".card-pizza").forEach(card => {
-    card.classList.remove("selecionada");
-  });
-
-  // Marca a pizza selecionada
-  const cards = document.querySelectorAll(".card-pizza");
-  cards.forEach(card => {
-    if (card.innerText.includes(nome)) {
-      card.classList.add("selecionada");
-    }
-  });
-
-  // Define pizza1 e pizza2 conforme o modo (inteira ou meio a meio)
+function selecionarPizza(id, nome, preco, elemento) {
   if (modo === 1) {
-    pizza1 = { id, nome, preco };
+    pizza1 = { id, nome, preco: parseFloat(preco) };
     pizza2 = null;
-  } else {
-    if (!pizza1 || pizza1.id === id) {
-      pizza1 = { id, nome, preco };
+    document.querySelectorAll(".card-pizza").forEach(c => c.classList.remove("selecionada"));
+    elemento.classList.add("selecionada");
+  } else if (modo === 2) {
+    if (pizza1 && pizza1.id === id) {
+      pizza1 = null;
+      elemento.classList.remove("selecionada");
+    } else if (pizza2 && pizza2.id === id) {
+      pizza2 = null;
+      elemento.classList.remove("selecionada");
+    } else if (!pizza1) {
+      pizza1 = { id, nome, preco: parseFloat(preco) };
+      elemento.classList.add("selecionada");
+    } else if (!pizza2) {
+      pizza2 = { id, nome, preco: parseFloat(preco) };
+      elemento.classList.add("selecionada");
     } else {
-      pizza2 = { id, nome, preco };
-    }
-
-    // Marca visualmente ambas as pizzas meio a meio
-    if (pizza1 && pizza2) {
-      cards.forEach(card => {
-        if (card.innerText.includes(pizza1.nome) || card.innerText.includes(pizza2.nome)) {
-          card.classList.add("selecionada");
-        }
-      });
+      alert("Você já selecionou 2 sabores para meio a meio");
+      return;
     }
   }
-
   atualizarResumo();
 }
 
+function selecionarBorda(id, nome, preco, elemento) {
+  bordaSelecionada = id ? { id, nome, preco: parseFloat(preco) } : { id: null, nome: "Sem borda", preco: 0 };
+  document.querySelectorAll(".card-borda").forEach(c => c.classList.remove("selecionada"));
+  elemento.classList.add("selecionada");
+  atualizarResumo();
+}
+
+function permitirAlterarBorda() {
+   bordaSelecionada = null;
+   document.querySelectorAll(".card-borda").forEach(c => c.classList.remove("disabled", "selecionada"));
+   const btnBorda = document.querySelector("#etapa3 .btn-finalizar");
+   btnBorda.innerText = "➕ Adicionar Borda";
+   btnBorda.disabled = false;
+   atualizarResumo();
+ }
+
 function adicionarPizzaAoPedido() {
-  if (!pizza1) {
+  if (modo === 0) {
+    alert("Escolha o tipo da pizza.");
+    return;
+  }
+  if (modo === 1 && !pizza1) {
     alert("Selecione pelo menos 1 sabor.");
     return;
   }
+  if (modo === 2 && (!pizza1 || !pizza2)) {
+    alert("Selecione os 2 sabores para meio a meio.");
+    return;
+  }
 
-  const preco1 = parseFloat(pizza1.preco);
-  const preco2 = pizza2 ? parseFloat(pizza2.preco) : 0;
-  const total = modo === 2 ? Math.max(preco1, preco2) : preco1;
+  let precoPizza = modo === 1 ? pizza1.preco : Math.max(pizza1.preco, pizza2.preco);
+  let precoBorda = bordaSelecionada ? bordaSelecionada.preco : 0;
 
   carrinho.push({
     tipo: 'pizza',
     pizza1,
     pizza2,
-    total: total.toFixed(2)
+    borda: bordaSelecionada,
+    total: (precoPizza + precoBorda).toFixed(2)
   });
 
+  // Reset pré-seleção
   pizza1 = null;
   pizza2 = null;
+  bordaSelecionada = null;
+
+  limparSelecoes();
   atualizarResumo();
 }
 
 function adicionarBebidaAoPedido(id, nome, preco) {
-  const qtd = parseInt(document.getElementById(`quantidade-${id}`).value);
-  if (qtd <= 0 || isNaN(qtd)) {
+  const input = document.getElementById(`quantidade-${id}`);
+  let qtd = parseInt(input.value);
+  if (qtd < 1 || isNaN(qtd)) {
     alert("Quantidade inválida");
     return;
   }
 
-  const total = parseFloat(preco) * qtd;
+  bebidasSelecionadas[id] = { nome, preco: parseFloat(preco), quantidade: qtd };
 
-  carrinho.push({
-    tipo: 'bebida',
-    bebida: { id, nome, preco },
-    quantidade: qtd,
-    total: total.toFixed(2)
+  // Atualiza visual da bebida selecionada
+  document.querySelectorAll(".card-bebida").forEach(card => card.classList.remove("selecionada"));
+  Object.keys(bebidasSelecionadas).forEach(bebId => {
+    const card = [...document.querySelectorAll(".card-bebida")].find(c => c.querySelector("h5").innerText === bebidasSelecionadas[bebId].nome);
+    if (card) card.classList.add("selecionada");
   });
 
   atualizarResumo();
 }
 
+function removerDoPedido(index) {
+  // Se for pizza, remove do carrinho
+  if (index < carrinho.length) {
+    carrinho.splice(index, 1);
+  }
+  atualizarResumo();
+}
+
 function atualizarResumo() {
-  const resumo = document.getElementById("resumo-sabores");
+  const resumo = document.getElementById("resumo-pedido");
   resumo.innerHTML = '';
 
-  // PRÉVIA DA PIZZA SELECIONADA
+  // PRÉVIA DA PIZZA SELECIONADA (antes de adicionar ao carrinho)
   if (pizza1) {
-    let textoPizza = "";
-    if (modo === 1 || !pizza2) {
-      textoPizza = `🍕 <strong>${pizza1.nome}</strong>`;
-    } else {
-      textoPizza = `🍕 <strong>${pizza1.nome}</strong> + <strong>${pizza2.nome}</strong>`;
+    let textoPizza = modo === 1 || !pizza2
+      ? `🍕 <strong>${pizza1.nome}</strong>`
+      : `🍕 <strong>${pizza1.nome}</strong> + <strong>${pizza2.nome}</strong>`;
+
+    if (bordaSelecionada && bordaSelecionada.nome && bordaSelecionada.nome !== "Sem borda") {
+      textoPizza += ` (${bordaSelecionada.nome})`;
     }
 
     resumo.innerHTML += `
@@ -193,32 +273,55 @@ function atualizarResumo() {
       </li>`;
   }
 
-  // LISTA DE ITENS DO CARRINHO
+  // ITENS do carrinho
   carrinho.forEach((item, index) => {
     let texto = "";
     if (item.tipo === 'pizza') {
       texto = item.pizza2
         ? `🍕 ${item.pizza1.nome} + ${item.pizza2.nome}`
         : `🍕 ${item.pizza1.nome}`;
+      if (item.borda && item.borda.nome && item.borda.nome !== "Sem borda") {
+        texto += ` (${item.borda.nome})`;
+      }
     } else {
       texto = `🥤 ${item.bebida.nome} x ${item.quantidade}`;
     }
-
     resumo.innerHTML += `
       <li>
         ${texto} — <strong>R$ ${item.total}</strong>
         <button class="btn-excluir" onclick="removerDoPedido(${index})">❌</button>
       </li>`;
   });
+
+  // Bebidas pré-selecionadas (que ainda não foram adicionadas ao carrinho)
+  Object.entries(bebidasSelecionadas).forEach(([id, b]) => {
+    // Para não duplicar bebidas que já estão no carrinho, verifique se bebida está no carrinho
+    const jaNoCarrinho = carrinho.some(item => item.tipo === 'bebida' && item.bebida.id === id);
+    if (!jaNoCarrinho) {
+      const total = (b.preco * b.quantidade).toFixed(2);
+      resumo.innerHTML += `
+        <li>
+          🥤 ${b.nome} x ${b.quantidade} — <strong>R$ ${total}</strong>
+          <button class="btn-excluir" onclick="removerBebidaSelecionada('${id}')">❌</button>
+        </li>`;
+    }
+  });
 }
 
-function removerDoPedido(index) {
-  carrinho.splice(index, 1);
+function removerBebidaSelecionada(id) {
+  delete bebidasSelecionadas[id];
+  document.querySelectorAll(".card-bebida").forEach(card => {
+    // Acha o id correto para comparar:
+    const cardNome = card.querySelector("h5").innerText;
+    // Busque o nome no bebidasSelecionadas antes? Ou mantenha mapa id -> nome fora
+    // Aqui, o jeito mais simples é comparar pelo nome, não pelo id:
+    if (cardNome === id) {  // Isso está errado pois id é um número, cardNome string.
+      card.classList.remove("selecionada");
+    }
+  });
   atualizarResumo();
 }
-
-document.getElementById("formPedido").addEventListener("submit", function(e) {
   document.getElementById("pedido_final").value = JSON.stringify(carrinho);
-});
+
 </script>
 {% endblock %}

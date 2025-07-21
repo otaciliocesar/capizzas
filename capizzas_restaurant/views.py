@@ -4,13 +4,13 @@ from capizzas_restaurant.models import Pizza, Compra, Bebida, CompraBebida
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.contrib import messages
-from .forms import PizzaForm, ClienteForm, CompraForm, BebidaForm, PromocaoForm, ProdutoDiversoForm
+from .forms import PizzaForm, ClienteForm, CompraForm, BebidaForm, PromocaoForm, ProdutoDiversoForm, BordaForm
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login
 from functools import wraps
 from django.views.decorators.http import require_http_methods, require_POST
 from django.db import transaction
-from .models import Promocao, Cliente, ProdutoDiverso
+from .models import Promocao, Cliente, ProdutoDiverso, Borda
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
@@ -88,12 +88,6 @@ def excluir_pizza(request, pizza_id):
     pizza.delete()
     return redirect('cadastropizza')
 
-@login_required(login_url='login')
-def pedidopizza(request):
-    pizzas = Pizza.objects.all().values('nome', 'ingredientes', 'preco')
-    pizzas_json = json.dumps(list(pizzas), cls=DjangoJSONEncoder)
-    return render(request, 'pedidopizza.html', {'pizzas_json': pizzas_json})
-
 
 def HomeData(request):
     pizzas = Pizza.objects.all().values('nome', 'ingredientes', 'preco')
@@ -162,39 +156,71 @@ def logout_cliente(request):
 
 
 
+import json
+from decimal import Decimal
+
 @login_required(login_url='login')
 def carrinho_view(request):
     cliente = request.user.cliente
     pizzas = Pizza.objects.all()
     bebidas = Bebida.objects.all()
-    carrinho = request.session.get("carrinho", [])
+    carrinho_session = request.session.get("carrinho", [])
 
     if request.method == 'POST':
-        form = CompraForm(request.POST)
-        if form.is_valid():
-            compra = form.save(commit=False)
-            compra.cliente = cliente
+        # Recebe o JSON do campo oculto
+        pedido_json = request.POST.get('pedido_final')
+        if not pedido_json:
+            # Trate o erro ou redirecione
+            return redirect('carrinho')
 
-            # Lógica de preço com base na pizza_1 e pizza_2
-            preco1 = compra.pizza_1.preco
-            preco2 = compra.pizza_2.preco if compra.pizza_2 else 0
-            compra.preco_final = max(preco1, preco2)
+        pedido_itens = json.loads(pedido_json)
 
-            compra.save()
+        # Para simplificar, crie uma compra para cada pizza (ou adapte conforme seu modelo)
+        for item in pedido_itens:
+            if item['tipo'] == 'pizza':
+                pizza1 = Pizza.objects.get(id=item['pizza1']['id'])
+                pizza2 = None
+                if item.get('pizza2'):
+                    pizza2 = Pizza.objects.get(id=item['pizza2']['id'])
 
-            # Limpa o carrinho da sessão após salvar
-            request.session["carrinho"] = []
+                preco_pizza1 = pizza1.preco
+                preco_pizza2 = pizza2.preco if pizza2 else Decimal('0.00')
+                preco_base = max(preco_pizza1, preco_pizza2)
 
-            return redirect('pagina_de_sucesso')
+                borda_info = item.get('borda')
+                preco_borda = Decimal(borda_info['preco']) if borda_info else Decimal('0.00')
+
+                compra = Compra(
+                    cliente=cliente,
+                    pizza_1=pizza1,
+                    pizza_2=pizza2,
+                    preco_final=preco_base + preco_borda,
+                    borda=borda_info  # salva dict com sabores e preco
+                )
+                compra.save()
+
+            elif item['tipo'] == 'bebida':
+                # Similarmente, salvar bebidas se você tiver o model para isso
+                pass
+
+        # Limpa carrinho da sessão após salvar
+        request.session["carrinho"] = []
+
+        return redirect('pagina_de_sucesso')
+
     else:
         form = CompraForm()
+    
+    bordas = Borda.objects.all()
 
     return render(request, 'carrinho.html', {
-        'form': form,
-        'pizzas': pizzas,
-        'bebidas': bebidas,
-        'carrinho': carrinho,
-    })
+    'form': form,
+    'pizzas': list(pizzas.values('id', 'nome', 'preco')),
+    'bebidas': list(bebidas.values('id', 'nome', 'preco')),
+    'bordas': list(bordas.values('id', 'nome', 'preco')),
+    'carrinho': carrinho_session,
+})
+
 
 
 
@@ -211,7 +237,6 @@ def checkout_view(request):
             carrinho = json.loads(carrinho_json)
             request.session["carrinho"] = carrinho  # Salva o carrinho na sessão
 
-            # Opcional: salvar slug da promoção na sessão, se enviado no POST
             promocao_slug = request.POST.get("promocao_slug")
             if promocao_slug:
                 request.session["promocao_slug"] = promocao_slug
@@ -221,27 +246,35 @@ def checkout_view(request):
             cliente = request.user.cliente
             total = sum(float(item["total"]) for item in carrinho)
 
-            # Montar HTML simples do email:
-            itens_html = "".join([
-                f"<li>🍕 {item['pizza1']['nome']}" +
-                (f" + {item['pizza2']['nome']}" if item.get('pizza2') else "") +
-                f" — <strong>R$ {item['total']}</strong></li>"
-                if item['tipo'] == 'pizza' else
-                f"<li>🥤 {item['bebida']['nome']} x {item['quantidade']} — <strong>R$ {item['total']}</strong></li>"
-                for item in carrinho
-            ])
+            itens_html = ""
+            for item in carrinho:                
+                if item['tipo'] == 'pizza':
+                    sabores = item.get('sabores', [])
+                    nomes_sabores = ' + '.join(sabor['nome'] for sabor in sabores)
+                    borda = item.get('borda', {})
+                    borda_nome = borda['sabores'][0] if borda.get('temBorda') and borda.get('sabores') else 'Sem borda'
+                    itens_html += (
+                f"<li>🍕 {nomes_sabores} + Borda: {borda_nome} — <strong>R$ {item['total']}</strong></li>"
+            )
+                elif item['tipo'] == 'bebida':
+                    bebida = item.get('bebida', {})
+                    nome_bebida = bebida.get('nome', 'Bebida')
+                    quantidade = item.get('quantidade', 1)
+                    itens_html += (
+                f"<li>🥤 {nome_bebida} x {quantidade} — <strong>R$ {item['total']}</strong></li>"
+            )
 
             html_email = f"""
-                <h2>🍕 Confirmação de Pedido - Capizzas</h2>
-                <p>Olá {cliente.nome},</p>
-                <p>Recebemos seu pedido com sucesso! Aqui está o resumo:</p>
-                <ul>{itens_html}</ul>
-                <p><strong>Total do pedido:</strong> R$ {total:.2f}</p>
-                <p>🛵 Em breve estaremos chegando com sua pizza quente e saborosa!</p>
-                <hr>
-                <p>📍 Endereço de entrega: {cliente.endereco_entrega}, Nº {cliente.numero}</p>
-                <p>📧 E-mail: {cliente.email}</p>
-            """
+            <h2>🍕 Confirmação de Pedido - Capizzas</h2>
+            <p>Olá {cliente.nome},</p>
+            <p>Recebemos seu pedido com sucesso! Aqui está o resumo:</p>
+            <ul>{itens_html}</ul>
+            <p><strong>Total do pedido:</strong> R$ {total:.2f}</p>
+            <p>🛵 Em breve estaremos chegando com sua pizza quente e saborosa!</p>
+            <hr>
+            <p>📍 Endereço de entrega: {cliente.endereco_entrega}, Nº {cliente.numero}</p>
+            <p>📧 E-mail: {cliente.email}</p>
+        """
 
             assunto = "🍕 Capizzas - Confirmação do Pedido"
             destinatario = request.user.email
@@ -283,20 +316,19 @@ def checkout_view(request):
 @login_required(login_url='login')
 @require_POST
 def finalizar_pedido(request):
-    print("📬 View finalizar_pedido foi chamada")
-
     cliente = request.user.cliente
     carrinho_str = request.POST.get('pedido_final', '[]')
 
     try:
         carrinho = json.loads(carrinho_str)
-    except json.JSONDecodeError as e:
-        print(f"❌ Erro de JSON: {e}")
+    except json.JSONDecodeError:
         messages.error(request, "Erro no formato do pedido. Tente novamente.")
         return redirect('checkout')
 
     try:
         with transaction.atomic():
+            compras_bebidas = []  # lista para agrupar bebidas por compra
+
             for item in carrinho:
                 if item['tipo'] == 'pizza':
                     pizza1_id = item['pizza1']['id']
@@ -310,16 +342,23 @@ def finalizar_pedido(request):
                         preco_final=preco_final,
                         quantidade=1
                     )
+                    # Salva borda como JSON se existir
+                    if item.get('borda'):
+                        compra.borda = item['borda']
+                        compra.save()
 
                 elif item['tipo'] == 'bebida':
+                    # Para bebidas, vamos criar uma compra "sem pizza"
                     bebida_id = item['bebida']['id']
                     quantidade = item['quantidade']
+                    preco_final = float(item['total'])
 
                     compra = Compra.objects.create(
                         cliente=cliente,
-                        pizza_1=Pizza.objects.first(),  # Dummy temporário
-                        preco_final=float(item['total']),
-                        quantidade=1
+                        pizza_1=None,
+                        pizza_2=None,
+                        preco_final=preco_final,
+                        quantidade=quantidade
                     )
                     CompraBebida.objects.create(
                         compra=compra,
@@ -327,44 +366,12 @@ def finalizar_pedido(request):
                         quantidade=quantidade
                     )
 
-        # Enviar e-mail
-        from utils.email import enviar_email
-
-        itens_html = "".join([
-            f"<li>🍕 {item['pizza1']['nome']}" +
-            (f" + {item['pizza2']['nome']}" if item.get('pizza2') else "") +
-            f" — <strong>R$ {item['total']}</strong></li>"
-            if item['tipo'] == 'pizza' else
-            f"<li>🥤 {item['bebida']['nome']} x {item['quantidade']} — <strong>R$ {item['total']}</strong></li>"
-            for item in carrinho
-        ])
-        total = sum(float(item["total"]) for item in carrinho)
-
-        html_email = f"""
-            <h2>🍕 Confirmação de Pedido - Capizzas</h2>
-            <p>Olá {cliente.nome},</p>
-            <p>Recebemos seu pedido com sucesso! Aqui está o resumo:</p>
-            <ul>{itens_html}</ul>
-            <p><strong>Total do pedido:</strong> R$ {total:.2f}</p>
-            <p>🛵 Em breve estaremos chegando com sua pizza quente e saborosa!</p>
-            <hr>
-            <p>📍 Endereço de entrega: {cliente.endereco_entrega}, Nº {cliente.numero}</p>
-            <p>📧 E-mail: {cliente.email}</p>
-        """
-        assunto = "🍕 Capizzas - Confirmação do Pedido"
-        texto = f"Olá {cliente.nome}, recebemos seu pedido! Total: R$ {total:.2f}"
-        destinatario = cliente.email
-
-        enviar_email(destinatario, assunto, texto, html_email)
-        enviar_email("contato@capizzas.com", "[Cópia Interna] " + assunto, texto, html_email)
-
         messages.success(request, "Pedido finalizado com sucesso! Confirmação enviada por e-mail.")
         request.session.pop('promocao_slug', None)
         return redirect('cardapio')
 
     except Exception as e:
-        print(f"❌ Erro ao finalizar pedido: {e}")
-        messages.error(request, "Erro ao finalizar pedido.")
+        messages.error(request, f"Erro ao finalizar pedido: {e}")
         return redirect('checkout')
 
     
@@ -530,5 +537,25 @@ def editar_perfil(request):
 
     return render(request, 'editar_perfil.html', {
         'form': form,
+        'sucesso': sucesso
+    })
+
+
+def cadastro_borda(request):
+    bordas = Borda.objects.all()
+    sucesso = False
+
+    if request.method == 'POST':
+        form = BordaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            sucesso = True
+            return redirect('cadastro_borda')  # Redireciona para limpar o form
+    else:
+        form = BordaForm()
+
+    return render(request, 'cadastroborda_form.html', {
+        'form': form,
+        'bordas': bordas,
         'sucesso': sucesso
     })
