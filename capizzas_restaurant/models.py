@@ -9,7 +9,7 @@ class Cliente(models.Model):
     sobrenome = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     endereco_entrega = models.CharField(max_length=200)
-    numero = models.CharField(max_length=11)
+    numero = models.CharField(max_length=15)
 
     def __str__(self):
         return f"{self.nome} {self.sobrenome}"

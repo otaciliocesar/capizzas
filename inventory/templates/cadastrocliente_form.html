@@ -21,4 +21,23 @@
         <button type="submit" class="submit-btn" style="display: block; margin: 0 auto;">Cadastrar</button>
     </form>
 </main>
+
+<!-- Inputmask via CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/inputmask.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const numeroInput = document.getElementById("id_numero");
+
+    if (numeroInput) {
+      // Máscara para (11) 91234-5678 ou (11) 1234-5678
+      Inputmask({
+        mask: "(99) 99999-9999",
+        placeholder: " ",
+        showMaskOnHover: false,
+        showMaskOnFocus: true,
+        clearIncomplete: false
+      }).mask(numeroInput);
+    }
+  });
+</script>
 {% endblock %}

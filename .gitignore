@@ -2,8 +2,10 @@
 venv/
 
 # Arquivos de mídia (uploads)
-media/
-
+media/diversos
+media/bebidas
+media/pizzas
+media/promocoes
 # Arquivo de variáveis de ambiente
 .env
 
