@@ -4,22 +4,18 @@ from capizzas_restaurant.models import Pizza, Compra, Bebida, CompraBebida
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.contrib import messages
-from decimal import Decimal
 from .forms import PizzaForm, ClienteForm, CompraForm, BebidaForm, PromocaoForm, ProdutoDiversoForm
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login
 from functools import wraps
 from django.views.decorators.http import require_http_methods, require_POST
-from django.template.loader import render_to_string
 from django.db import transaction
 from .models import Promocao, Cliente, ProdutoDiverso
-from django.core.mail import send_mail
-from django.conf import settings
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from utils.email import enviar_email
 from django.urls import reverse
 
 class SobrePageView(TemplateView):
@@ -42,16 +38,8 @@ def Cardapio(request):
     pizzas = Pizza.objects.all()
     return render(request, 'cardapio.html', {'pizzas': pizzas})
 
-def login_cliente_required(view_func):
-    @wraps(view_func)
-    def _wrapped_view(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return redirect(f'/login/?next={request.path}')
-        return view_func(request, *args, **kwargs)
-    return _wrapped_view
 
-
-@login_cliente_required
+@login_required(login_url='login')
 def cadastro_pizza(request):
     if not request.user.is_superuser:
         return redirect('base')
@@ -74,7 +62,7 @@ def cadastro_pizza(request):
         'pizza_editando': pizza_instance
     })
 
-
+@login_required(login_url='login')
 def editar_pizza(request, id):
     if not request.user.is_superuser:
         return redirect('base')
@@ -91,7 +79,7 @@ def editar_pizza(request, id):
     bebidas = Bebida.objects.all()
     return render(request, 'cadastropizza_form.html', {'form': form, 'pizzas': pizzas, 'bebidas': bebidas})
 
-
+@login_required(login_url='login')
 def excluir_pizza(request, pizza_id):
     if not request.user.is_superuser:
         return redirect('cadastropizza')  # Protege para só admin excluir
@@ -100,7 +88,7 @@ def excluir_pizza(request, pizza_id):
     pizza.delete()
     return redirect('cadastropizza')
 
-
+@login_required(login_url='login')
 def pedidopizza(request):
     pizzas = Pizza.objects.all().values('nome', 'ingredientes', 'preco')
     pizzas_json = json.dumps(list(pizzas), cls=DjangoJSONEncoder)
@@ -119,13 +107,37 @@ def cadastro_cliente(request):
     if request.method == 'POST':
         form = ClienteForm(request.POST)
         if form.is_valid():
-            cliente = form.save(commit=False)
-            cliente.senha = make_password(form.cleaned_data['senha'])  # <- Aqui criptografa a senha
-            cliente.save()
-            return redirect('login')  # redireciona para login após cadastro
+            dados = form.cleaned_data
+
+            # Verifica se já existe um usuário com esse email
+            if User.objects.filter(username=dados['email']).exists():
+                messages.error(request, "Já existe um usuário com este email.")
+                return render(request, 'cadastrocliente_form.html', {'form': form})
+
+            # Cria o usuário (login com email como username)
+            user = User.objects.create_user(
+                username=dados['email'],
+                email=dados['email'],
+                password=dados['senha'],  # campo do formulário
+                first_name=dados['nome'],
+                last_name=dados['sobrenome']
+            )
+
+            # Cria o cliente vinculado
+            cliente = Cliente.objects.create(
+                user=user,
+                nome=dados['nome'],
+                sobrenome=dados['sobrenome'],
+                email=dados['email'],
+                endereco_entrega=dados['endereco_entrega'],
+                numero=dados['numero']
+            )
+
+            messages.success(request, "Cadastro realizado com sucesso. Você já pode fazer login.")
+            return redirect('login')
     else:
         form = ClienteForm()
-    
+
     return render(request, 'cadastrocliente_form.html', {'form': form})
 
 
@@ -135,12 +147,11 @@ def login_cliente(request):
         senha = request.POST.get('senha')
 
         user = authenticate(request, username=email, password=senha)
-        if user is not None:
+        if user:
             login(request, user)
-            return redirect('cardapio')  # Ou para onde você quiser
+            return redirect('cardapio')
         else:
-            messages.error(request, 'Email ou senha incorretos.')
-
+            messages.error(request, "Email ou senha inválidos.")
     return render(request, 'login.html')
 
 
@@ -151,7 +162,7 @@ def logout_cliente(request):
 
 
 
-@login_cliente_required
+@login_required(login_url='login')
 def carrinho_view(request):
     cliente = request.user.cliente
     pizzas = Pizza.objects.all()
@@ -187,7 +198,7 @@ def carrinho_view(request):
 
 
 
-@login_cliente_required
+@login_required(login_url='login')
 @require_http_methods(["GET", "POST"])
 def checkout_view(request):
     if request.method == 'POST':
@@ -269,7 +280,7 @@ def checkout_view(request):
 
 
 
-@login_cliente_required
+@login_required(login_url='login')
 @require_POST
 def finalizar_pedido(request):
     print("📬 View finalizar_pedido foi chamada")
@@ -358,7 +369,7 @@ def finalizar_pedido(request):
 
     
 
-@login_cliente_required
+@login_required(login_url='login')
 def gerenciar_promocoes(request):
     if not request.user.is_superuser:
         return redirect('base')
@@ -379,7 +390,7 @@ def gerenciar_promocoes(request):
         'promocoes': promocoes
     })
 
-@login_cliente_required
+@login_required(login_url='login')
 def pedido_promocao(request, slug):
     promocao = get_object_or_404(Promocao, slug=slug, ativa=True)
     bebidas = Bebida.objects.all()
@@ -394,7 +405,7 @@ def pedido_promocao(request, slug):
         'carrinho': carrinho,
     })
 
-@login_cliente_required
+@login_required(login_url='login')
 @require_POST
 def excluir_promocao(request, id):
     if not request.user.is_superuser:
@@ -409,7 +420,7 @@ def promocoes_view(request):
     promocoes = Promocao.objects.all()
     return render(request, "promocoes.html", {"promocoes": promocoes})
 
-@login_cliente_required
+@login_required(login_url='login')
 def clientes_pedidos(request):
     cliente = Cliente.objects.get(user=request.user)
     pedidos = Compra.objects.filter(cliente=cliente).order_by('-timestamp').prefetch_related('bebidas', 'comprabebida_set')
@@ -418,7 +429,7 @@ def clientes_pedidos(request):
 
 
 
-@login_cliente_required
+@login_required(login_url='login')
 def cadastro_bebidas(request):
     if not request.user.is_superuser:
         return redirect('base')
@@ -446,7 +457,7 @@ def cadastro_bebidas(request):
         'bebida_editando': bebida_instance
     })
 
-@login_cliente_required
+@login_required(login_url='login')
 def excluir_bebida(request, id):
     if not request.user.is_superuser:
         return redirect('base')
@@ -454,7 +465,7 @@ def excluir_bebida(request, id):
     bebida.delete()
     return redirect('cadastrobebidas')
 
-@login_cliente_required
+@login_required(login_url='login')
 def editar_bebida(request, id):
     if not request.user.is_superuser:
         return redirect('base')
@@ -469,7 +480,7 @@ def editar_bebida(request, id):
         form = BebidaForm(instance=bebida)
     return render(request, 'editar_bebida.html', {'form': form})
 
-@login_cliente_required
+@login_required(login_url='login')
 def cadastro_produtos_diversos(request):
     produto_editando = None
     error = None
@@ -504,7 +515,7 @@ def excluir_diverso(request, produto_id):
     produto.delete()
     return redirect('cadastrodiversos')
 
-@login_cliente_required
+@login_required(login_url='login')
 def editar_perfil(request):
     cliente = get_object_or_404(Cliente, user=request.user)
     sucesso = False

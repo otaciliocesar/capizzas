@@ -10,6 +10,7 @@ class PizzaForm(forms.ModelForm):
 
 class ClienteForm(forms.ModelForm):
     senha = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+
     class Meta:
         model = Cliente
         fields = ['nome', 'sobrenome', 'email', 'endereco_entrega', 'numero', 'senha']
@@ -21,26 +22,12 @@ class ClienteForm(forms.ModelForm):
             'numero': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
-    def save(self, commit=True):
-        cliente = super().save(commit=False)
-        senha = self.cleaned_data['senha']
+    def clean_email(self):
         email = self.cleaned_data['email']
-        nome = self.cleaned_data['nome']
-        sobrenome = self.cleaned_data['sobrenome']
-
-        user = User.objects.create_user(
-            username=email,
-            email=email,
-            password=senha,
-            first_name=nome,
-            last_name=sobrenome
-        )
-
-        cliente.user = user
-
-        if commit:
-            cliente.save()
-        return cliente
+        from django.contrib.auth.models import User
+        if User.objects.filter(username=email).exists():
+            raise forms.ValidationError("Este e-mail já está em uso.")
+        return email
 
 class CompraForm(forms.ModelForm):
     class Meta:
