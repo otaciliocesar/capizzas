@@ -244,7 +244,14 @@ def checkout_view(request):
                 request.session.pop("promocao_slug", None)
 
             cliente = request.user.cliente
-            total = sum(float(item["total"]) for item in carrinho)
+            total = 0
+            for item in carrinho:
+                if item["tipo"] == "pizza":
+                    total += float(item.get("total", 0))
+                elif item["tipo"] == "bebida":
+                    preco = item.get("bebida", {}).get("preco", 0)
+                    quantidade = item.get("quantidade", 1)
+                    total += float(preco) * int(quantidade)
 
             itens_html = ""
             for item in carrinho:                
@@ -254,15 +261,17 @@ def checkout_view(request):
                     borda = item.get('borda', {})
                     borda_nome = borda['sabores'][0] if borda.get('temBorda') and borda.get('sabores') else 'Sem borda'
                     itens_html += (
-                f"<li>🍕 {nomes_sabores} + Borda: {borda_nome} — <strong>R$ {item['total']}</strong></li>"
-            )
+                        f"<li>🍕 {nomes_sabores} + Borda: {borda_nome} — <strong>R$ {item['total']}</strong></li>"
+                    )
                 elif item['tipo'] == 'bebida':
                     bebida = item.get('bebida', {})
                     nome_bebida = bebida.get('nome', 'Bebida')
                     quantidade = item.get('quantidade', 1)
+                    preco = bebida.get('preco', 0)
+                    total_bebida = float(preco) * int(quantidade)
                     itens_html += (
-                f"<li>🥤 {nome_bebida} x {quantidade} — <strong>R$ {item['total']}</strong></li>"
-            )
+                        f"<li>🥤 {nome_bebida} x {quantidade} — <strong>R$ {total_bebida:.2f}</strong></li>"
+                    )
 
             html_email = f"""
             <h2>🍕 Confirmação de Pedido - Capizzas</h2>
@@ -274,7 +283,7 @@ def checkout_view(request):
             <hr>
             <p>📍 Endereço de entrega: {cliente.endereco_entrega}, Nº {cliente.numero}</p>
             <p>📧 E-mail: {cliente.email}</p>
-        """
+            """
 
             assunto = "🍕 Capizzas - Confirmação do Pedido"
             destinatario = request.user.email
@@ -309,6 +318,7 @@ def checkout_view(request):
         "promocao": promocao,
         "voltar_url": voltar_url,
     })
+
 
 
 

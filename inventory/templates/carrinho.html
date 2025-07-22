@@ -101,6 +101,7 @@
       <button type="submit" class="btn-finalizar" style="background-color: green; display:block; width: 100%; padding: 14px 0; font-size:1.2rem; border-radius: 30px; font-weight: 700; cursor:pointer;">
         Finalizar Pedido
       </button>
+      <button type="button" class="limpar-btn" onclick="limparCarrinho()">Limpar Pedido</button>
     </form>
   </div>
 </div>
@@ -112,15 +113,14 @@ let pizza1 = null;
 let pizza2 = null;
 let bordaSelecionada = null;
 let carrinho = [];
-let bebidasSelecionadas = {}; // { bebidaId: {nome, preco, quantidade} }
+
 
 function escolherSabores(qtd) {
   modo = qtd;
   pizza1 = null;
   pizza2 = null;
   bordaSelecionada = null;
-  carrinho = [];
-  bebidasSelecionadas = {};
+  
 
   // Mostrar etapas
   document.getElementById("etapa2").style.display = "block";
@@ -137,7 +137,7 @@ function limparSelecoes() {
   document.querySelectorAll(".card-borda").forEach(c => c.classList.remove("selecionada"));
   // Não limpamos bebida para manter seleção visível
   document.querySelectorAll(".input-quantidade").forEach(input => input.value = 1);
-  bebidasSelecionadas = {};
+  //bebidasSelecionadas = {};
   atualizarResumo();
 }
 
@@ -233,14 +233,17 @@ function adicionarBebidaAoPedido(id, nome, preco) {
     return;
   }
 
-  bebidasSelecionadas[id] = { nome, preco: parseFloat(preco), quantidade: qtd };
+  carrinho.push({
+  tipo: 'bebida',
+  bebida: { id, nome, preco: parseFloat(preco) },
+  quantidade: qtd,
+  total: (parseFloat(preco) * qtd).toFixed(2)
+});
 
-  // Atualiza visual da bebida selecionada
+  // Atualiza visual da bebida selecionada (opcional)
   document.querySelectorAll(".card-bebida").forEach(card => card.classList.remove("selecionada"));
-  Object.keys(bebidasSelecionadas).forEach(bebId => {
-    const card = [...document.querySelectorAll(".card-bebida")].find(c => c.querySelector("h5").innerText === bebidasSelecionadas[bebId].nome);
-    if (card) card.classList.add("selecionada");
-  });
+  const card = document.getElementById(`card-bebida-${id}`);
+  if (card) card.classList.add("selecionada");
 
   atualizarResumo();
 }
@@ -253,9 +256,26 @@ function removerDoPedido(index) {
   atualizarResumo();
 }
 
+
+function removerBebidaSelecionada(id) {
+  delete bebidasSelecionadas[id];
+  document.querySelectorAll(".card-bebida").forEach(card => {
+    // Acha o id correto para comparar:
+    const cardNome = card.querySelector("h5").innerText;
+    // Busque o nome no bebidasSelecionadas antes? Ou mantenha mapa id -> nome fora
+    // Aqui, o jeito mais simples é comparar pelo nome, não pelo id:
+    if (cardNome === id) {  // Isso está errado pois id é um número, cardNome string.
+      card.classList.remove("selecionada");
+    }
+  });
+  atualizarResumo();
+  document.getElementById("pedido_final").value = JSON.stringify(carrinho);
+}
 function atualizarResumo() {
   const resumo = document.getElementById("resumo-pedido");
   resumo.innerHTML = '';
+
+  let total = 0;
 
   // PRÉVIA DA PIZZA SELECIONADA (antes de adicionar ao carrinho)
   if (pizza1) {
@@ -273,55 +293,57 @@ function atualizarResumo() {
       </li>`;
   }
 
-  // ITENS do carrinho
-  carrinho.forEach((item, index) => {
-    let texto = "";
-    if (item.tipo === 'pizza') {
-      texto = item.pizza2
-        ? `🍕 ${item.pizza1.nome} + ${item.pizza2.nome}`
-        : `🍕 ${item.pizza1.nome}`;
-      if (item.borda && item.borda.nome && item.borda.nome !== "Sem borda") {
-        texto += ` (${item.borda.nome})`;
-      }
-    } else {
-      texto = `🥤 ${item.bebida.nome} x ${item.quantidade}`;
-    }
-    resumo.innerHTML += `
-      <li>
-        ${texto} — <strong>R$ ${item.total}</strong>
-        <button class="btn-excluir" onclick="removerDoPedido(${index})">❌</button>
-      </li>`;
-  });
+  const pizzas = carrinho.filter(item => item.tipo === "pizza");
+  const bebidas = carrinho.filter(item => item.tipo === "bebida");
 
-  // Bebidas pré-selecionadas (que ainda não foram adicionadas ao carrinho)
-  Object.entries(bebidasSelecionadas).forEach(([id, b]) => {
-    // Para não duplicar bebidas que já estão no carrinho, verifique se bebida está no carrinho
-    const jaNoCarrinho = carrinho.some(item => item.tipo === 'bebida' && item.bebida.id === id);
-    if (!jaNoCarrinho) {
-      const total = (b.preco * b.quantidade).toFixed(2);
-      resumo.innerHTML += `
-        <li>
-          🥤 ${b.nome} x ${b.quantidade} — <strong>R$ ${total}</strong>
-          <button class="btn-excluir" onclick="removerBebidaSelecionada('${id}')">❌</button>
-        </li>`;
-    }
-  });
+  if (pizzas.length > 0) {
+    const pizzaHeader = document.createElement("h4");
+    pizzaHeader.textContent = "Pizzas:";
+    resumo.appendChild(pizzaHeader);
+
+    pizzas.forEach((item, index) => {
+      const texto = item.pizza2
+        ? `${item.pizza1.nome} + ${item.pizza2.nome}`
+        : `${item.pizza1.nome}`;
+      const borda = item.borda && item.borda.nome && item.borda.nome !== "Sem borda"
+        ? ` (${item.borda.nome})`
+        : "";
+
+      const p = document.createElement("p");
+      p.innerHTML = `${index + 1}. 🍕 ${texto}${borda} - <strong>R$${parseFloat(item.total).toFixed(2)}</strong>`;
+      resumo.appendChild(p);
+
+      total += parseFloat(item.total);
+    });
+  }
+
+  if (bebidas.length > 0) {
+    const bebidaHeader = document.createElement("h4");
+    bebidaHeader.textContent = "Bebidas:";
+    resumo.appendChild(bebidaHeader);
+
+    bebidas.forEach((item, index) => {
+      const p = document.createElement("p");
+      p.innerHTML = `${index + 1}. 🥤 ${item.bebida.nome} x ${item.quantidade} - <strong>R$${(item.bebida.preco * item.quantidade).toFixed(2)}</strong>`;
+      resumo.appendChild(p);
+
+      total += item.bebida.preco * item.quantidade;
+    });
+  }
+  // Total final
+  const totalElement = document.createElement("p");
+  totalElement.innerHTML = `<strong>Total: R$${total.toFixed(2)}</strong>`;
+  resumo.appendChild(totalElement);
+
+  // Atualiza campo oculto
+  document.getElementById("pedido_final").value = JSON.stringify(carrinho);
 }
-
-function removerBebidaSelecionada(id) {
-  delete bebidasSelecionadas[id];
-  document.querySelectorAll(".card-bebida").forEach(card => {
-    // Acha o id correto para comparar:
-    const cardNome = card.querySelector("h5").innerText;
-    // Busque o nome no bebidasSelecionadas antes? Ou mantenha mapa id -> nome fora
-    // Aqui, o jeito mais simples é comparar pelo nome, não pelo id:
-    if (cardNome === id) {  // Isso está errado pois id é um número, cardNome string.
-      card.classList.remove("selecionada");
-    }
-  });
+function limparCarrinho() {
+  carrinho = [];
+  bebidasSelecionadas = {};
   atualizarResumo();
 }
-  document.getElementById("pedido_final").value = JSON.stringify(carrinho);
 
 </script>
+
 {% endblock %}
