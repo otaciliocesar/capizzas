@@ -56,14 +56,15 @@
   <!-- BOTÕES -->
 <div class="botoes-final">
   {{ carrinho|json_script:"pedido_final_json" }}
-  <form method="post" action="{% url 'finalizar_pedido' %}">
-    {% csrf_token %}
-    <input type="hidden" name="pedido_final" value="">
-    {% if promocao %}
-      <input type="hidden" name="promocao_slug" value="{{ promocao.slug }}">
-    {% endif %}
-    <button type="submit" class="btn-confirmar">✅ Confirmar Pedido</button>
-  </form>
+<form method="post" action="{% url 'finalizar_pedido' %}">
+  {% csrf_token %}
+  <input type="hidden" name="pedido_final" value="">
+  <input type="hidden" name="finalizar_pedido" value="1"> <!-- 👈 Esse é o segredo -->
+  {% if promocao %}
+    <input type="hidden" name="promocao_slug" value="{{ promocao.slug }}">
+  {% endif %}
+  <button type="submit" class="btn-confirmar">✅ Confirmar Pedido</button>
+</form>
 
   {% if promocao %}
     <a class="btn-voltar" href="{% url 'pedido_promocao' promocao.slug %}">Refazer pedido</a>
