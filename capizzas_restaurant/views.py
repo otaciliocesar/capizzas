@@ -222,18 +222,26 @@ def carrinho_view(request):
 
 
 
-
-
+from django.shortcuts import render, redirect
+from django.urls import reverse
+from django.contrib import messages
+from django.core.mail import EmailMultiAlternatives
+from django.utils.html import strip_tags
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
+from django.conf import settings
+import json
+from .models import Promocao  # ajuste se necessário
 
 @login_required(login_url='login')
 @require_http_methods(["GET", "POST"])
 def checkout_view(request):
     if request.method == "POST":
-        # Se o POST veio com "pedido_final", significa que está vindo do carrinho.html
-        if "pedido_final" in request.POST:
+        # POST vindo do carrinho.html → salvar carrinho na sessão e redirecionar para checkout
+        if "pedido_final" in request.POST and not request.POST.get("finalizar_pedido"):
             try:
                 carrinho = json.loads(request.POST.get("pedido_final"))
-                request.session["carrinho"] = carrinho  # Salva carrinho na sessão
+                request.session["carrinho"] = carrinho
 
                 promocao_slug = request.POST.get("promocao_slug")
                 if promocao_slug:
@@ -247,7 +255,7 @@ def checkout_view(request):
                 messages.error(request, "Erro ao processar o carrinho.")
                 return redirect("carrinho")
 
-        # POST vindo de checkout.html com intenção de finalizar o pedido
+        # POST vindo de checkout.html → finalizar pedido
         elif "finalizar_pedido" in request.POST:
             carrinho = request.session.get("carrinho")
             promocao_slug = request.session.get("promocao_slug")
@@ -273,9 +281,14 @@ def checkout_view(request):
                     sabores = item.get('sabores', [])
                     nomes_sabores = ' + '.join(sabor['nome'] for sabor in sabores) if sabores else "Pizza"
                     borda = item.get('borda', {})
-                    borda_nome = borda['sabores'][0] if borda.get('temBorda') and borda.get('sabores') else 'Sem borda'
+                    borda_nome = ''
+                    if borda and isinstance(borda, dict):
+                        nome_borda = borda.get('nome', '')
+                        # Só mostra borda se existir e não for "Sem borda"
+                        if nome_borda and nome_borda.lower() != 'sem borda':
+                            borda_nome = f"({nome_borda})"
                     itens_html += (
-                        f"<li>🍕 {nomes_sabores} + Borda: {borda_nome} — <strong>R$ {item['total']}</strong></li>"
+                        f"<li>🍕 {nomes_sabores}{borda_nome} — <strong>R$ {item['total']}</strong></li>"
                     )
                 elif item['tipo'] == 'bebida':
                     bebida = item.get('bebida', {})
@@ -295,35 +308,41 @@ def checkout_view(request):
                 <p><strong>Total do pedido:</strong> R$ {total:.2f}</p>
                 <p>🛵 Em breve estaremos chegando com sua pizza quente e saborosa!</p>
                 <hr>
-                <p>📍 Endereço de entrega: {cliente.endereco_entrega}, Nº {cliente.numero}</p>
+                <p>👤 Nome: {cliente.nome} {cliente.sobrenome}</p>
+                <p>📱 Número de contato {cliente.numero}</p>
+                <p>📍 Endereço de entrega: {cliente.endereco_entrega}</p>            
                 <p>📧 E-mail: {cliente.email}</p>
             """
 
-            assunto = "🍕 Capizzas - Confirmação do Pedido"
-            remetente = settings.EMAIL_HOST_USER
-            destinatario = request.user.email
-            texto = strip_tags(html_email)
+            # E-mail para o cliente
+            email_cliente = EmailMultiAlternatives(
+                subject="🍕 Capizzas - Confirmação do Pedido",
+                body=strip_tags(html_email),
+                from_email=settings.EMAIL_HOST_USER,
+                to=[request.user.email],
+)
+            email_cliente.attach_alternative(html_email, "text/html")
+            email_cliente.send()
 
-            email = EmailMultiAlternatives(
-                subject=assunto,
-                body=texto,
-                from_email=remetente,
-                to=[destinatario],
-            )
-            email.attach_alternative(html_email, "text/html")
-            email.send()
+# E-mail para a empresa (cópia interna) com tag no assunto
+            assunto_interno = "🍕 Capizzas - Confirmação do Pedido [Cópia Interna]"
+            email_empresa = EmailMultiAlternatives(
+                subject=assunto_interno,
+                body=strip_tags(html_email),
+                from_email=settings.EMAIL_HOST_USER,
+                to=[settings.EMAIL_HOST_USER],
+)
+            email_empresa.attach_alternative(html_email, "text/html")
+            email_empresa.send()
 
             messages.success(request, "Pedido confirmado! Confirmação enviada por e-mail.")
             return redirect("cardapio")
 
-    # GET (Exibe a página de checkout com carrinho)
+    # GET — exibir a página de checkout
     carrinho = request.session.get("carrinho", [])
     promocao_slug = request.session.get("promocao_slug")
 
-    if promocao_slug:
-        voltar_url = reverse('pedido_promocao', args=[promocao_slug])
-    else:
-        voltar_url = reverse('carrinho')
+    voltar_url = reverse('pedido_promocao', args=[promocao_slug]) if promocao_slug else reverse('carrinho')
 
     promocao = None
     if promocao_slug:
@@ -341,95 +360,7 @@ def checkout_view(request):
 
 
 
-
-
-
-
-# Certifique-se de que o caminho está correto
-
-@login_required(login_url='login')
-def finalizar_pedido(request):
-    if request.method != 'POST' or not request.POST.get('finalizar_pedido'):
-        return redirect('cardapio')  # ou outra página apropriada
-
-    cliente = request.user.cliente
-    pedido_json = request.POST.get('pedido_final')
-
-    if not pedido_json:
-        # Sem dados do pedido, redireciona ao carrinho
-        return redirect('carrinho')
-
-    try:
-        carrinho = json.loads(pedido_json)
-    except json.JSONDecodeError:
-        return redirect('carrinho')
-
-    # Salva as compras no banco
-    for item in carrinho:
-        if item['tipo'] == 'pizza':
-            pizza1 = Pizza.objects.get(id=item['pizza1']['id'])
-            pizza2 = Pizza.objects.get(id=item['pizza2']['id']) if item.get('pizza2') else None
-            preco_pizza1 = pizza1.preco
-            preco_pizza2 = pizza2.preco if pizza2 else Decimal('0.00')
-            preco_base = max(preco_pizza1, preco_pizza2)
-
-            borda_info = item.get('borda')
-            preco_borda = Decimal(borda_info['preco']) if borda_info else Decimal('0.00')
-
-            compra = Compra(
-                cliente=cliente,
-                pizza_1=pizza1,
-                pizza_2=pizza2,
-                preco_final=preco_base + preco_borda,
-                borda=borda_info  # salva dict com borda
-            )
-            compra.save()
-
-        elif item['tipo'] == 'bebida':
-            # Exemplo simples, adapte se tiver model BebidaCompra
-            pass
-
-    # Monta mensagem de email
-    mensagem = f"Olá {cliente.nome},\n\nSeu pedido foi confirmado com sucesso!\n\nResumo do pedido:\n"
-    for item in carrinho:
-        if item['tipo'] == 'pizza':
-            nome1 = item['pizza1']['nome']
-            nome2 = item['pizza2']['nome'] if item.get('pizza2') else ''
-            if nome2:
-                mensagem += f"- Pizza meio a meio: {nome1} e {nome2} | Total: R$ {item['total']}\n"
-            else:
-                mensagem += f"- Pizza inteira: {nome1} | Total: R$ {item['total']}\n"
-            if item.get('borda'):
-                mensagem += f"  > Borda: {item['borda']}\n"
-        elif item['tipo'] == 'bebida':
-            bebida = item['bebida']['nome']
-            quantidade = item['quantidade']
-            mensagem += f"- {quantidade}x Bebida: {bebida} | Total: R$ {item['total']}\n"
-
-    mensagem += "\nAgradecemos por escolher a Capizzas! 🍕"
-
-    # Envia email para o cliente
-    enviar_email(
-        destinatario=request.user.email,
-        assunto="Seu pedido foi confirmado!",
-        corpo_texto=mensagem,
-        corpo_html=mensagem
-    )
-
-    # Envia cópia interna para pizzaria
-    enviar_email(
-        destinatario="contato@capizzas.com",
-        assunto=f"Novo pedido de {request.user.get_full_name()}",
-        corpo_texto=mensagem,
-        corpo_html=mensagem
-    )
-
-    return redirect('cardapio')
-
-
-
-
-    
+   
 
 @login_required(login_url='login')
 def gerenciar_promocoes(request):

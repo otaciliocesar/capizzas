@@ -13,6 +13,15 @@ body {
   color: #333;
 }
 
+/* Cores e variáveis */
+:root {
+  --cor-principal: #328d52;
+  --cor-secundaria: #ff5722;
+  --cor-erro: #c0392b;
+  --cor-sucesso: green;
+  --borda-radius: 8px;
+}
+
 /* HEADER */
 header.header {
   background-color: #328d52;
@@ -1438,11 +1447,6 @@ footer .last-update {
   padding: 1rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.etapa-container {
-  max-width: 900px;
-  margin: 2rem auto;
-  font-family: Arial, sans-serif;
 }
 .etapa {
   margin-bottom: 2rem;

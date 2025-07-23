@@ -29,12 +29,20 @@
         {% for item in carrinho %}
         <tr>
           <td>
-            {% if item.tipo == 'pizza' %}
-              🍕 {{ item.pizza1.nome }}{% if item.pizza2 %} + {{ item.pizza2.nome }}{% endif %}
-            {% elif item.tipo == 'bebida' %}
-              🥤 {{ item.bebida.nome }}
-            {% endif %}
-          </td>
+  {% if item.tipo == 'pizza' %}
+    🍕
+    {% if item.pizza2 %}
+      {{ item.pizza1.nome }} + {{ item.pizza2.nome }}
+    {% else %}
+      {{ item.pizza1.nome }}
+    {% endif %}
+    {% if item.borda and item.borda.nome and item.borda.nome != "Sem borda" %}
+      ({{ item.borda.nome }})
+    {% endif %}
+  {% elif item.tipo == 'bebida' %}
+    🥤 {{ item.bebida.nome }}
+  {% endif %}
+</td>
           <td>
             {% if item.tipo == 'bebida' %}
               {{ item.quantidade }}
@@ -56,7 +64,7 @@
   <!-- BOTÕES -->
 <div class="botoes-final">
   {{ carrinho|json_script:"pedido_final_json" }}
-<form method="post" action="{% url 'finalizar_pedido' %}">
+<form method="post" action="{% url 'checkout' %}">
   {% csrf_token %}
   <input type="hidden" name="pedido_final" value="">
   <input type="hidden" name="finalizar_pedido" value="1"> <!-- 👈 Esse é o segredo -->
