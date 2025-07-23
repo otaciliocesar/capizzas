@@ -24,11 +24,11 @@
     <div class="card-pizza" onclick="selecionarPizza('{{ pizza.id }}', '{{ pizza.nome }}', '{{ pizza.preco }}', this)"
          role="button" tabindex="0"
          onkeypress="if(event.key==='Enter') selecionarPizza('{{ pizza.id }}', '{{ pizza.nome }}', '{{ pizza.preco }}', this)">
-      {% if pizza.imagem %}
-        <img src="{{ pizza.imagem.url }}" alt="{{ pizza.nome }}">
-      {% else %}
-        <img src="" alt="Imagem não disponível">
-      {% endif %}
+     {% if pizza.imagem %}
+  <img src="{{ pizza.imagem.url }}" alt="{{ pizza.nome }}">
+{% else %}
+  <img src="{% static 'imagens/padrao-pizza.jpg' %}" alt="Imagem não disponível">
+{% endif %}
       <h4>{{ pizza.nome }}</h4>
       <p>{{ pizza.ingredientes }}</p>
       <span class="preco">R$ {{ pizza.preco }}</span>

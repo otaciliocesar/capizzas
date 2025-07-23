@@ -214,8 +214,8 @@ def carrinho_view(request):
 
     return render(request, 'carrinho.html', {
     'form': form,
-    'pizzas': list(pizzas.values('id', 'nome', 'preco')),
-    'bebidas': list(bebidas.values('id', 'nome', 'preco')),
+    'pizzas': pizzas,
+    'bebidas': bebidas,
     'bordas': list(bordas.values('id', 'nome', 'preco')),
     'carrinho': carrinho_session,
 })
@@ -237,7 +237,6 @@ from .models import Promocao  # ajuste se necessário
 @require_http_methods(["GET", "POST"])
 def checkout_view(request):
     if request.method == "POST":
-        # POST vindo do carrinho.html → salvar carrinho na sessão e redirecionar para checkout
         if "pedido_final" in request.POST and not request.POST.get("finalizar_pedido"):
             try:
                 carrinho = json.loads(request.POST.get("pedido_final"))
@@ -255,7 +254,6 @@ def checkout_view(request):
                 messages.error(request, "Erro ao processar o carrinho.")
                 return redirect("carrinho")
 
-        # POST vindo de checkout.html → finalizar pedido
         elif "finalizar_pedido" in request.POST:
             carrinho = request.session.get("carrinho")
             promocao_slug = request.session.get("promocao_slug")
@@ -269,33 +267,47 @@ def checkout_view(request):
             itens_html = ""
 
             for item in carrinho:
-                if item["tipo"] == "pizza":
-                    total += float(item.get("total", 0))
-                elif item["tipo"] == "bebida":
-                    preco = item.get("bebida", {}).get("preco", 0)
-                    quantidade = item.get("quantidade", 1)
-                    total += float(preco) * int(quantidade)
-
-            for item in carrinho:
                 if item['tipo'] == 'pizza':
-                    sabores = item.get('sabores', [])
-                    nomes_sabores = ' + '.join(sabor['nome'] for sabor in sabores) if sabores else "Pizza"
+                    nomes = []
+                    pizza1 = item.get("pizza1")
+                    pizza2 = item.get("pizza2")
+
+                    if pizza1 and isinstance(pizza1, dict):
+                        nomes.append(pizza1.get("nome", ""))
+
+                    if pizza2 and isinstance(pizza2, dict):
+                        nomes.append(pizza2.get("nome", ""))
+
+
+                    if len(nomes) == 1:
+                        nome_pizza = f"Pizza {nomes[0]}"
+                    elif len(nomes) == 2:
+                        nome_pizza = f"Pizza {nomes[0]} + {nomes[1]}"
+                    else:
+                        nome_pizza = "Pizza"
+
                     borda = item.get('borda', {})
-                    borda_nome = ''
-                    if borda and isinstance(borda, dict):
+                    if isinstance(borda, dict):
                         nome_borda = borda.get('nome', '')
-                        # Só mostra borda se existir e não for "Sem borda"
-                        if nome_borda and nome_borda.lower() != 'sem borda':
-                            borda_nome = f"({nome_borda})"
+                        if nome_borda and nome_borda.lower() != "sem borda":
+                            nome_pizza += f" ({nome_borda})"
+
+                    total_pizza = float(item.get("total", 0))
+                    total += total_pizza
+
                     itens_html += (
-                        f"<li>🍕 {nomes_sabores}{borda_nome} — <strong>R$ {item['total']}</strong></li>"
-                    )
+        f"<li>🍕 {nome_pizza} — <strong>R$ {total_pizza:.2f}</strong></li>"
+    )
+
                 elif item['tipo'] == 'bebida':
                     bebida = item.get('bebida', {})
                     nome_bebida = bebida.get('nome', 'Bebida')
                     quantidade = item.get('quantidade', 1)
                     preco = bebida.get('preco', 0)
                     total_bebida = float(preco) * int(quantidade)
+
+                    total += total_bebida
+
                     itens_html += (
                         f"<li>🥤 {nome_bebida} x {quantidade} — <strong>R$ {total_bebida:.2f}</strong></li>"
                     )
@@ -314,31 +326,31 @@ def checkout_view(request):
                 <p>📧 E-mail: {cliente.email}</p>
             """
 
-            # E-mail para o cliente
+            # Enviar e-mail para cliente
             email_cliente = EmailMultiAlternatives(
                 subject="🍕 Capizzas - Confirmação do Pedido",
                 body=strip_tags(html_email),
                 from_email=settings.EMAIL_HOST_USER,
                 to=[request.user.email],
-)
+            )
             email_cliente.attach_alternative(html_email, "text/html")
             email_cliente.send()
 
-# E-mail para a empresa (cópia interna) com tag no assunto
+            # E-mail para empresa
             assunto_interno = "🍕 Capizzas - Confirmação do Pedido [Cópia Interna]"
             email_empresa = EmailMultiAlternatives(
                 subject=assunto_interno,
                 body=strip_tags(html_email),
                 from_email=settings.EMAIL_HOST_USER,
                 to=[settings.EMAIL_HOST_USER],
-)
+            )
             email_empresa.attach_alternative(html_email, "text/html")
             email_empresa.send()
 
             messages.success(request, "Pedido confirmado! Confirmação enviada por e-mail.")
             return redirect("cardapio")
 
-    # GET — exibir a página de checkout
+    # GET
     carrinho = request.session.get("carrinho", [])
     promocao_slug = request.session.get("promocao_slug")
 
@@ -356,6 +368,7 @@ def checkout_view(request):
         "promocao": promocao,
         "voltar_url": voltar_url,
     })
+
 
 
 
