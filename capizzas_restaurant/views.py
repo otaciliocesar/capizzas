@@ -15,7 +15,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 from django.conf import settings
 from decimal import Decimal
-from utils.email import enviar_email
+
 
 class SobrePageView(TemplateView):
     template_name = 'sobre.html'
@@ -220,18 +220,6 @@ def carrinho_view(request):
     'carrinho': carrinho_session,
 })
 
-
-
-from django.shortcuts import render, redirect
-from django.urls import reverse
-from django.contrib import messages
-from django.core.mail import EmailMultiAlternatives
-from django.utils.html import strip_tags
-from django.views.decorators.http import require_http_methods
-from django.contrib.auth.decorators import login_required
-from django.conf import settings
-import json
-from .models import Promocao  # ajuste se necessário
 
 @login_required(login_url='login')
 @require_http_methods(["GET", "POST"])

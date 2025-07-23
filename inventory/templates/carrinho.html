@@ -7,7 +7,7 @@
 
   <!-- 1. Escolha tipo da pizza -->
   <div class="etapa" id="etapa1">
-    <h3>1. Escolha sua pizza:</h3>
+    <h3 style="text-align:center;">1. Escolha sua pizza:</h3>
     <div class="botoes-sabores">
       <button class="btn-sabor" onclick="escolherSabores(1)">Inteira</button>
       <button class="btn-sabor" onclick="escolherSabores(2)">Meio a Meio</button>
@@ -16,7 +16,7 @@
 
   <!-- 2. Escolha sabores -->
 <div class="etapa" id="etapa2" style="display:none;">
-  <h3>2. Escolha o(s) sabor(es):</h3>
+  <h3 style="text-align:center;">2. Escolha o(s) sabor(es):</h3>
   <input type="text" id="campoFiltro" placeholder="🔍 Buscar pizza..." onkeyup="filtrarPizzas()" 
          style="width:100%;max-width:400px;margin-bottom:20px;padding:10px 15px;border-radius:25px;border:2px solid #ccc;" />
   <div class="grade-pizzas">
@@ -40,7 +40,7 @@
 
   <!-- 3. Escolha borda (opcional) -->
   <div class="etapa" id="etapa3" style="display:none;">
-    <h3>3. Escolha sua borda (opcional):</h3>
+    <h3 style="text-align:center;">3. Escolha sua borda (opcional):</h3>
     <div class="grade-bordas" style="display:flex; flex-wrap:wrap; justify-content:center; gap:30px; margin-bottom:40px;">
       {% for borda in bordas %}
       <div class="card-borda" onclick="selecionarBorda('{{ borda.id }}', '{{ borda.nome }}', '{{ borda.preco }}', this)"
@@ -66,7 +66,7 @@
 
   <!-- 4. Escolha bebidas -->
 <div class="etapa" id="etapa4" style="display:none;">
-  <h3>4. Escolha suas bebidas:</h3>
+  <h3 style="text-align:center;">4. Escolha suas bebidas:</h3>
   <div class="grade-bebidas">
     {% for bebida in bebidas %}
     <div class="card-bebida" role="region" aria-label="{{ bebida.nome }}">
@@ -80,10 +80,7 @@
       <div class="acoes-bebida" style="margin-top:10px; display:flex; justify-content:center; gap:10px; align-items:center;">
         <input type="number" min="1" value="1" id="quantidade-{{ bebida.id }}" class="input-quantidade"
                style="width:60px; padding:6px 10px; font-size:1rem; border-radius:8px; border:1.5px solid #ccc; text-align:center;">
-        <button onclick="adicionarBebidaAoPedido('{{ bebida.id }}', '{{ bebida.nome }}', '{{ bebida.preco }}')"
-                style="padding:6px 12px; cursor:pointer; border-radius:8px; border:none; background:#328d52; color:white; font-weight:600; transition:background-color 0.3s;">
-          Adicionar
-        </button>
+        <button class="btn-finalizar" onclick="adicionarBebidaAoPedido('{{ bebida.id }}', '{{ bebida.nome }}', '{{ bebida.preco }}')"> Adicionar </button>
       </div>
     </div>
     {% endfor %}
@@ -91,19 +88,19 @@
 </div>
 
   <!-- 5. Resumo pedido -->
-  <div class="etapa" id="etapa5" style="display:none;">
-    <h3>5. Resumo do Pedido:</h3>
-    <ul id="resumo-pedido" style="list-style:none; padding-left:0; max-width:600px; margin:0 auto;"></ul>
+<div class="etapa" id="etapa5" style="display:none;">
+  <h3 style="text-align:center;">5. Resumo do Pedido:</h3>
+  <ul id="resumo-pedido" style="list-style:none; padding-left:0; max-width:600px; margin:0 auto;"></ul>
 
-    <form id="formPedido" method="post" action="{% url 'checkout' %}" style="max-width:600px; margin: 20px auto 0;">
-      {% csrf_token %}
-      <input type="hidden" name="pedido_final" id="pedido_final">
-      <button type="submit" class="btn-finalizar" style="background-color: green; display:block; width: 100%; padding: 14px 0; font-size:1.2rem; border-radius: 30px; font-weight: 700; cursor:pointer;">
-        Finalizar Pedido
-      </button>
-      <button type="button" class="limpar-btn" onclick="limparCarrinho()">Limpar Pedido</button>
-    </form>
-  </div>
+  <form id="formPedido" method="post" action="{% url 'checkout' %}" style="max-width:600px; margin: 30px auto 0; text-align:center;">
+    {% csrf_token %}
+    <input type="hidden" name="pedido_final" id="pedido_final">
+    
+<div class="botoes-checkout">
+  <button type="submit" class="btn-finalizar">✅ Finalizar Pedido</button>
+  <button type="button" class="btn-finalizar btn-secundario" onclick="limparCarrinho()">🗑️ Limpar Pedido</button>
+</div>
+  </form>
 </div>
 
 
@@ -226,6 +223,13 @@ function adicionarPizzaAoPedido() {
 }
 
 function adicionarBebidaAoPedido(id, nome, preco) {
+  const pizzasNoCarrinho = carrinho.some(item => item.tipo === 'pizza');
+  
+  if (!pizzasNoCarrinho) {
+    alert("Por favor, adicione pelo menos uma pizza antes de escolher bebidas.");
+    return;
+  }
+
   const input = document.getElementById(`quantidade-${id}`);
   let qtd = parseInt(input.value);
   if (qtd < 1 || isNaN(qtd)) {
@@ -234,19 +238,15 @@ function adicionarBebidaAoPedido(id, nome, preco) {
   }
 
   carrinho.push({
-  tipo: 'bebida',
-  bebida: { id, nome, preco: parseFloat(preco) },
-  quantidade: qtd,
-  total: (parseFloat(preco) * qtd).toFixed(2)
-});
-
-  // Atualiza visual da bebida selecionada (opcional)
-  document.querySelectorAll(".card-bebida").forEach(card => card.classList.remove("selecionada"));
-  const card = document.getElementById(`card-bebida-${id}`);
-  if (card) card.classList.add("selecionada");
+    tipo: 'bebida',
+    bebida: { id, nome, preco: parseFloat(preco) },
+    quantidade: qtd,
+    total: (parseFloat(preco) * qtd).toFixed(2)
+  });
 
   atualizarResumo();
 }
+
 
 function removerDoPedido(index) {
   // Se for pizza, remove do carrinho

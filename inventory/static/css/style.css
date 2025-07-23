@@ -1451,6 +1451,12 @@ footer .last-update {
 .etapa {
   margin-bottom: 2rem;
 }
+.etapa h3 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  color: #333;
+}
 .grade-bordas {
   display: flex;
   flex-wrap: wrap;
@@ -1499,4 +1505,37 @@ footer .last-update {
 
 .limpar-btn:hover {
   background-color: #e74c3c;
+}
+.botoes-checkout {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.botoes-checkout .btn-finalizar {
+  flex: 1;
+  max-width: 200px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background-color: #328d60;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+
+.botoes-checkout .btn-finalizar:hover {
+  background-color: #328d60;
+}
+
+.botoes-checkout .btn-secundario {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.botoes-checkout .btn-secundario:hover {
+  background-color: #c8c8c8;
 }
