@@ -81,7 +81,7 @@ class ClienteForm(forms.ModelForm):
 class CompraForm(forms.ModelForm):
     class Meta:
         model = Compra
-        fields = ['pizza_1', 'pizza_2', 'quantidade']
+        fields = '__all__'
         widgets = {
             'pizza_1': forms.Select(attrs={'class': 'form-control'}),
             'pizza_2': forms.Select(attrs={'class': 'form-control'}),

@@ -1,13 +1,14 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect, get_object_or_404
-from capizzas_restaurant.models import Pizza, Compra, Bebida
+from capizzas_restaurant.models import Pizza, Compra, Bebida, CompraBebida, Promocao, ProdutoDiverso, Cliente, Borda
+from django.utils import timezone 
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.contrib import messages
 from .forms import PizzaForm, ClienteForm, CompraForm, BebidaForm, PromocaoForm, ProdutoDiversoForm, BordaForm
 from django.contrib.auth import authenticate, login
 from django.views.decorators.http import require_http_methods, require_POST
-from .models import Promocao, Cliente, ProdutoDiverso, Borda
+from .models import CompraItemPizza, Promocao, Cliente, ProdutoDiverso, Borda
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
@@ -155,8 +156,7 @@ def logout_cliente(request):
 
 
 
-import json
-from decimal import Decimal
+
 
 @login_required(login_url='login')
 def carrinho_view(request):
@@ -166,15 +166,18 @@ def carrinho_view(request):
     carrinho_session = request.session.get("carrinho", [])
 
     if request.method == 'POST':
-        # Recebe o JSON do campo oculto
         pedido_json = request.POST.get('pedido_final')
         if not pedido_json:
-            # Trate o erro ou redirecione
             return redirect('carrinho')
 
         pedido_itens = json.loads(pedido_json)
+        total = Decimal('0.00')
 
-        # Para simplificar, crie uma compra para cada pizza (ou adapte conforme seu modelo)
+        compra = Compra.objects.create(
+            cliente=cliente,
+            preco_final=Decimal('0.00'),
+        )
+
         for item in pedido_itens:
             if item['tipo'] == 'pizza':
                 pizza1 = Pizza.objects.get(id=item['pizza1']['id'])
@@ -188,43 +191,62 @@ def carrinho_view(request):
 
                 borda_info = item.get('borda')
                 preco_borda = Decimal(borda_info['preco']) if borda_info else Decimal('0.00')
+                preco_total = preco_base + preco_borda
 
-                compra = Compra(
-                    cliente=cliente,
+                CompraItemPizza.objects.create(
+                    compra=compra,
                     pizza_1=pizza1,
                     pizza_2=pizza2,
-                    preco_final=preco_base + preco_borda,
-                    borda=borda_info  # salva dict com sabores e preco
+                    borda=borda_info,
+                    preco=preco_total,
+                    quantidade=1
                 )
-                compra.save()
+
+                total += preco_total
 
             elif item['tipo'] == 'bebida':
-                # Similarmente, salvar bebidas se você tiver o model para isso
-                pass
+                bebida_data = item.get('bebida')
+                if bebida_data:
+                    bebida = Bebida.objects.get(id=bebida_data['id'])
+                    quantidade = int(item.get('quantidade', 1))
+                    
+                    # Cria registro CompraBebida com quantidade
+                    CompraBebida.objects.create(
+                        compra=compra,
+                        bebida=bebida,
+                        quantidade=quantidade
+                    )
+                    
+                    total += bebida.preco * quantidade
 
-        # Limpa carrinho da sessão após salvar
+        compra.preco_final = total
+        compra.save()
+
+        # Limpa o carrinho da sessão após salvar
         request.session["carrinho"] = []
 
         return redirect('pagina_de_sucesso')
 
     else:
         form = CompraForm()
-    
+
     bordas = Borda.objects.all()
 
     return render(request, 'carrinho.html', {
-    'form': form,
-    'pizzas': pizzas,
-    'bebidas': bebidas,
-    'bordas': list(bordas.values('id', 'nome', 'preco')),
-    'carrinho': carrinho_session,
-})
+        'form': form,
+        'pizzas': pizzas,
+        'bebidas': bebidas,
+        'bordas': list(bordas.values('id', 'nome', 'preco')),
+        'carrinho': carrinho_session,
+    })
+
 
 
 @login_required(login_url='login')
 @require_http_methods(["GET", "POST"])
 def checkout_view(request):
     if request.method == "POST":
+        # Etapa 1: Envio vindo do carrinho (salva na sessão)
         if "pedido_final" in request.POST and not request.POST.get("finalizar_pedido"):
             try:
                 carrinho = json.loads(request.POST.get("pedido_final"))
@@ -242,6 +264,7 @@ def checkout_view(request):
                 messages.error(request, "Erro ao processar o carrinho.")
                 return redirect("carrinho")
 
+        # Etapa 2: Confirmação final → salvar no banco
         elif "finalizar_pedido" in request.POST:
             carrinho = request.session.get("carrinho")
             promocao_slug = request.session.get("promocao_slug")
@@ -251,55 +274,77 @@ def checkout_view(request):
                 return redirect("carrinho")
 
             cliente = request.user.cliente
-            total = 0
+            total = Decimal('0.00')
             itens_html = ""
+
+            # Criação da compra
+            compra = Compra.objects.create(
+                cliente=cliente,
+                preco_final=Decimal('0.00')
+            )
 
             for item in carrinho:
                 if item['tipo'] == 'pizza':
-                    nomes = []
-                    pizza1 = item.get("pizza1")
-                    pizza2 = item.get("pizza2")
+                    pizza1 = Pizza.objects.get(id=item['pizza1']['id'])
+                    pizza2 = None
+                    if item.get('pizza2'):
+                        pizza2 = Pizza.objects.get(id=item['pizza2']['id'])
 
-                    if pizza1 and isinstance(pizza1, dict):
-                        nomes.append(pizza1.get("nome", ""))
+                    preco_pizza1 = pizza1.preco
+                    preco_pizza2 = pizza2.preco if pizza2 else Decimal('0.00')
+                    preco_base = max(preco_pizza1, preco_pizza2)
 
-                    if pizza2 and isinstance(pizza2, dict):
-                        nomes.append(pizza2.get("nome", ""))
+                    borda_info = item.get('borda')
+                    preco_borda = Decimal(borda_info['preco']) if borda_info else Decimal('0.00')
+                    preco_total = preco_base + preco_borda
 
-
-                    if len(nomes) == 1:
-                        nome_pizza = f"Pizza {nomes[0]}"
-                    elif len(nomes) == 2:
-                        nome_pizza = f"Pizza {nomes[0]} + {nomes[1]}"
-                    else:
-                        nome_pizza = "Pizza"
-
-                    borda = item.get('borda', {})
-                    if isinstance(borda, dict):
-                        nome_borda = borda.get('nome', '')
-                        if nome_borda and nome_borda.lower() != "sem borda":
-                            nome_pizza += f" ({nome_borda})"
-
-                    total_pizza = float(item.get("total", 0))
-                    total += total_pizza
-
-                    itens_html += (
-        f"<li>🍕 {nome_pizza} — <strong>R$ {total_pizza:.2f}</strong></li>"
-    )
-
-                elif item['tipo'] == 'bebida':
-                    bebida = item.get('bebida', {})
-                    nome_bebida = bebida.get('nome', 'Bebida')
-                    quantidade = item.get('quantidade', 1)
-                    preco = bebida.get('preco', 0)
-                    total_bebida = float(preco) * int(quantidade)
-
-                    total += total_bebida
-
-                    itens_html += (
-                        f"<li>🥤 {nome_bebida} x {quantidade} — <strong>R$ {total_bebida:.2f}</strong></li>"
+                    CompraItemPizza.objects.create(
+                        compra=compra,
+                        pizza_1=pizza1,
+                        pizza_2=pizza2,
+                        borda=borda_info,
+                        preco=preco_total,
+                        quantidade=1
                     )
 
+                    total += preco_total
+
+                    # Construção do item do e-mail
+                    nomes = [pizza1.nome]
+                    if pizza2:
+                        nomes.append(pizza2.nome)
+                    nome_pizza = " + ".join(nomes)
+                    if borda_info and borda_info.get("nome", "").lower() != "sem borda":
+                        nome_pizza += f" ({borda_info['nome']})"
+
+                    itens_html += f"<li>🍕 {nome_pizza} — <strong>R$ {preco_total:.2f}</strong></li>"
+
+                elif item['tipo'] == 'bebida':
+                    bebida_data = item.get('bebida')
+                    if bebida_data:
+                        bebida = Bebida.objects.get(id=bebida_data['id'])
+                        quantidade = int(item.get('quantidade', 1))
+
+                        CompraBebida.objects.create(
+                            compra=compra,
+                            bebida=bebida,
+                            quantidade=quantidade
+                        )
+
+                        subtotal = bebida.preco * quantidade
+                        total += subtotal
+
+                        itens_html += f"<li>🥤 {bebida.nome} x {quantidade} — <strong>R$ {subtotal:.2f}</strong></li>"
+
+            # Atualiza total da compra
+            compra.preco_final = total
+            compra.save()
+
+            # Limpa carrinho da sessão
+            request.session["carrinho"] = []
+            request.session.pop("promocao_slug", None)
+
+            # Conteúdo do e-mail
             html_email = f"""
                 <h2>🍕 Confirmação de Pedido - Capizzas</h2>
                 <p>Olá {cliente.nome},</p>
@@ -314,7 +359,7 @@ def checkout_view(request):
                 <p>📧 E-mail: {cliente.email}</p>
             """
 
-            # Enviar e-mail para cliente
+            # Enviar para cliente
             email_cliente = EmailMultiAlternatives(
                 subject="🍕 Capizzas - Confirmação do Pedido",
                 body=strip_tags(html_email),
@@ -324,10 +369,9 @@ def checkout_view(request):
             email_cliente.attach_alternative(html_email, "text/html")
             email_cliente.send()
 
-            # E-mail para empresa
-            assunto_interno = "🍕 Capizzas - Confirmação do Pedido [Cópia Interna]"
+            # Enviar cópia interna
             email_empresa = EmailMultiAlternatives(
-                subject=assunto_interno,
+                subject="🍕 Capizzas - Confirmação do Pedido [Cópia Interna]",
                 body=strip_tags(html_email),
                 from_email=settings.EMAIL_HOST_USER,
                 to=[settings.EMAIL_HOST_USER],
@@ -338,10 +382,9 @@ def checkout_view(request):
             messages.success(request, "Pedido confirmado! Confirmação enviada por e-mail.")
             return redirect("cardapio")
 
-    # GET
+    # GET request → render checkout
     carrinho = request.session.get("carrinho", [])
     promocao_slug = request.session.get("promocao_slug")
-
     voltar_url = reverse('pedido_promocao', args=[promocao_slug]) if promocao_slug else reverse('carrinho')
 
     promocao = None
@@ -416,9 +459,8 @@ def promocoes_view(request):
 
 @login_required(login_url='login')
 def clientes_pedidos(request):
-    cliente = Cliente.objects.get(user=request.user)
-    pedidos = Compra.objects.filter(cliente=cliente).order_by('-timestamp').prefetch_related('bebidas', 'comprabebida_set')
-
+    cliente = get_object_or_404(Cliente, user=request.user)
+    pedidos = Compra.objects.filter(cliente=cliente).order_by('-timestamp')
     return render(request, 'clientespedidos.html', {'pedidos': pedidos})
 
 

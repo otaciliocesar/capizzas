@@ -43,17 +43,13 @@ class Bebida(models.Model):
 
 class Compra(models.Model):
     cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE)
-    pizza_1 = models.ForeignKey('Pizza', related_name='pizza_sabor1', on_delete=models.CASCADE)
-    pizza_2 = models.ForeignKey('Pizza', related_name='pizza_sabor2', on_delete=models.CASCADE, null=True, blank=True)
     preco_final = models.DecimalField(max_digits=6, decimal_places=2)
-    quantidade = models.PositiveIntegerField(default=1)
     bebidas = models.ManyToManyField('Bebida', through='CompraBebida', blank=True)
-    borda = JSONField(null=True, blank=True)
     updated = models.DateTimeField(auto_now=True)
     timestamp = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"Pedido de {self.cliente.nome} - {self.quantidade}x {self.pizza_1} {'+ ' + self.pizza_2.nome if self.pizza_2 else ''}"
+        return f"Compra #{self.pk} - Cliente: {self.cliente.nome}"
 
 
 class CompraBebida(models.Model):
@@ -94,3 +90,15 @@ class ProdutoDiverso(models.Model):
 
     def __str__(self):
         return self.nome
+
+
+class CompraItemPizza(models.Model):
+    compra = models.ForeignKey('Compra', on_delete=models.CASCADE, related_name='itens_pizza')
+    pizza_1 = models.ForeignKey('Pizza', related_name='item_pizza_sabor1', on_delete=models.CASCADE)
+    pizza_2 = models.ForeignKey('Pizza', related_name='item_pizza_sabor2', on_delete=models.CASCADE, null=True, blank=True)
+    borda = JSONField(null=True, blank=True)
+    preco = models.DecimalField(max_digits=6, decimal_places=2)
+    quantidade = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.quantidade}x {self.pizza_1} {'+ ' + self.pizza_2.nome if self.pizza_2 else ''}"

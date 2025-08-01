@@ -7,30 +7,40 @@
 <div class="pedidos-container">
   <h2>📦 Meus Pedidos</h2>
 
-  {% if pedidos %}
-    <div class="pedidos-lista">
-      {% for pedido in pedidos %}
-        <div class="pedido-card">
-          <h3>🧾 Pedido #{{ pedido.id }} - {{ pedido.timestamp|date:"d/m/Y H:i" }}</h3>
-          <p><strong>Sabores:</strong> {{ pedido.pizza_1.nome }}{% if pedido.pizza_2 %} + {{ pedido.pizza_2.nome }}{% endif %}</p>
-          <p><strong>Quantidade:</strong> {{ pedido.quantidade }}</p>
-          <p><strong>Bebidas:</strong>
-            {% if pedido.bebidas.all %}
-              <ul>
-              {% for item in pedido.comprabebida_set.all %}
-                <li>{{ item.quantidade }}x {{ item.bebida.nome }}</li>
-              {% endfor %}
-              </ul>
-            {% else %}
-              Nenhuma
-            {% endif %}
-          </p>
-          <p><strong>Total:</strong> R$ {{ pedido.preco_final }}</p>
-        </div>
+  {% for pedido in pedidos %}
+  <div class="pedido-card">
+    <h3>🧾 Pedido #{{ pedido.id }} - {{ pedido.timestamp|date:"d/m/Y H:i" }}</h3>
+
+    <p><strong>Pizzas:</strong></p>
+    <ul>
+      {% for item in pedido.itens_pizza.all %}
+        <li>
+          {{ item.quantidade }}x {{ item.pizza_1.nome }}{% if item.pizza_2 %} + {{ item.pizza_2.nome }}{% endif %}
+          {% if item.borda %}
+            (Borda: {{ item.borda.nome }} - R$ {{ item.borda.preco }})
+          {% endif %}
+          – R$ {{ item.preco }}
+        </li>
+      {% empty %}
+        <li>Sem pizzas neste pedido.</li>
       {% endfor %}
-    </div>
-  {% else %}
-    <p>Você ainda não realizou nenhum pedido.</p>
-  {% endif %}
+    </ul>
+
+    <p><strong>Bebidas:</strong></p>
+    {% if pedido.comprabebida_set.exists %}
+      <ul>
+      {% for item in pedido.comprabebida_set.all %}
+        <li>{{ item.quantidade }}x {{ item.bebida.nome }}</li>
+      {% endfor %}
+      </ul>
+    {% else %}
+      <p>Sem bebidas neste pedido.</p>
+    {% endif %}
+
+    <p><strong>Total:</strong> R$ {{ pedido.preco_final }}</p>
+  </div>
+  {% empty %}
+    <p>Você ainda não fez nenhum pedido.</p>
+  {% endfor %}
 </div>
 {% endblock %}
