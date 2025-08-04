@@ -1,7 +1,7 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect, get_object_or_404
 from capizzas_restaurant.models import Pizza, Compra, Bebida, CompraBebida, Promocao, ProdutoDiverso, Cliente, Borda
-from django.utils import timezone 
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.contrib import messages
@@ -16,6 +16,17 @@ from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 from django.conf import settings
 from decimal import Decimal
+import requests
+from xml.etree import ElementTree as ET
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import requests
+from django.conf import settings
+from django.urls import reverse
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+
 
 
 class SobrePageView(TemplateView):
@@ -241,12 +252,10 @@ def carrinho_view(request):
     })
 
 
-
 @login_required(login_url='login')
 @require_http_methods(["GET", "POST"])
 def checkout_view(request):
     if request.method == "POST":
-        # Etapa 1: Envio vindo do carrinho (salva na sessão)
         if "pedido_final" in request.POST and not request.POST.get("finalizar_pedido"):
             try:
                 carrinho = json.loads(request.POST.get("pedido_final"))
@@ -259,12 +268,10 @@ def checkout_view(request):
                     request.session.pop("promocao_slug", None)
 
                 return redirect("checkout")
-
             except json.JSONDecodeError:
                 messages.error(request, "Erro ao processar o carrinho.")
                 return redirect("carrinho")
 
-        # Etapa 2: Confirmação final → salvar no banco
         elif "finalizar_pedido" in request.POST:
             carrinho = request.session.get("carrinho")
             promocao_slug = request.session.get("promocao_slug")
@@ -277,22 +284,13 @@ def checkout_view(request):
             total = Decimal('0.00')
             itens_html = ""
 
-            # Criação da compra
-            compra = Compra.objects.create(
-                cliente=cliente,
-                preco_final=Decimal('0.00')
-            )
+            compra = Compra.objects.create(cliente=cliente, preco_final=Decimal('0.00'))
 
             for item in carrinho:
                 if item['tipo'] == 'pizza':
                     pizza1 = Pizza.objects.get(id=item['pizza1']['id'])
-                    pizza2 = None
-                    if item.get('pizza2'):
-                        pizza2 = Pizza.objects.get(id=item['pizza2']['id'])
-
-                    preco_pizza1 = pizza1.preco
-                    preco_pizza2 = pizza2.preco if pizza2 else Decimal('0.00')
-                    preco_base = max(preco_pizza1, preco_pizza2)
+                    pizza2 = Pizza.objects.get(id=item['pizza2']['id']) if item.get('pizza2') else None
+                    preco_base = max(pizza1.preco, pizza2.preco if pizza2 else Decimal('0.00'))
 
                     borda_info = item.get('borda')
                     preco_borda = Decimal(borda_info['preco']) if borda_info else Decimal('0.00')
@@ -308,15 +306,12 @@ def checkout_view(request):
                     )
 
                     total += preco_total
-
-                    # Construção do item do e-mail
                     nomes = [pizza1.nome]
                     if pizza2:
                         nomes.append(pizza2.nome)
                     nome_pizza = " + ".join(nomes)
                     if borda_info and borda_info.get("nome", "").lower() != "sem borda":
                         nome_pizza += f" ({borda_info['nome']})"
-
                     itens_html += f"<li>🍕 {nome_pizza} — <strong>R$ {preco_total:.2f}</strong></li>"
 
                 elif item['tipo'] == 'bebida':
@@ -324,27 +319,18 @@ def checkout_view(request):
                     if bebida_data:
                         bebida = Bebida.objects.get(id=bebida_data['id'])
                         quantidade = int(item.get('quantidade', 1))
-
-                        CompraBebida.objects.create(
-                            compra=compra,
-                            bebida=bebida,
-                            quantidade=quantidade
-                        )
-
+                        CompraBebida.objects.create(compra=compra, bebida=bebida, quantidade=quantidade)
                         subtotal = bebida.preco * quantidade
                         total += subtotal
-
                         itens_html += f"<li>🥤 {bebida.nome} x {quantidade} — <strong>R$ {subtotal:.2f}</strong></li>"
 
-            # Atualiza total da compra
             compra.preco_final = total
             compra.save()
 
-            # Limpa carrinho da sessão
             request.session["carrinho"] = []
             request.session.pop("promocao_slug", None)
 
-            # Conteúdo do e-mail
+            # Envio de e-mails
             html_email = f"""
                 <h2>🍕 Confirmação de Pedido - Capizzas</h2>
                 <p>Olá {cliente.nome},</p>
@@ -354,35 +340,85 @@ def checkout_view(request):
                 <p>🛵 Em breve estaremos chegando com sua pizza quente e saborosa!</p>
                 <hr>
                 <p>👤 Nome: {cliente.nome} {cliente.sobrenome}</p>
-                <p>📱 Número de contato {cliente.numero}</p>
-                <p>📍 Endereço de entrega: {cliente.endereco_entrega}</p>            
+                <p>📱 Número de contato: {cliente.numero}</p>
+                <p>📍 Endereço de entrega: {cliente.endereco_entrega}</p>
                 <p>📧 E-mail: {cliente.email}</p>
             """
 
-            # Enviar para cliente
-            email_cliente = EmailMultiAlternatives(
-                subject="🍕 Capizzas - Confirmação do Pedido",
-                body=strip_tags(html_email),
-                from_email=settings.EMAIL_HOST_USER,
-                to=[request.user.email],
-            )
-            email_cliente.attach_alternative(html_email, "text/html")
-            email_cliente.send()
+            for destinatario in [request.user.email, settings.EMAIL_HOST_USER]:
+                email = EmailMultiAlternatives(
+                    subject="🍕 Capizzas - Confirmação do Pedido",
+                    body=strip_tags(html_email),
+                    from_email=settings.EMAIL_HOST_USER,
+                    to=[destinatario],
+                )
+                email.attach_alternative(html_email, "text/html")
+                email.send()
 
-            # Enviar cópia interna
-            email_empresa = EmailMultiAlternatives(
-                subject="🍕 Capizzas - Confirmação do Pedido [Cópia Interna]",
-                body=strip_tags(html_email),
-                from_email=settings.EMAIL_HOST_USER,
-                to=[settings.EMAIL_HOST_USER],
-            )
-            email_empresa.attach_alternative(html_email, "text/html")
-            email_empresa.send()
+            # PagBank Checkout - sandbox
+            headers = {
+                "Authorization": f"Bearer {settings.PAGBANK_TOKEN}",
+                "Content-Type": "application/json",
+            }
 
-            messages.success(request, "Pedido confirmado! Confirmação enviada por e-mail.")
-            return redirect("cardapio")
+            data = {
+                "reference_id": f"compra-{compra.pk}",
+                "redirect_url": request.build_absolute_uri(reverse("meus_pedidos")),
+                "items": [
+                    {
+                        "name": "Pedido Capizzas",
+                        "quantity": 1,
+                        "unit_amount": int(compra.preco_final * 100)
+                    }
+                ],
+                "customer": {
+                    "name": f"{cliente.nome} {cliente.sobrenome}",
+                    "email": cliente.email,
+                    "tax_id": "11111111111",  # CPF fictício válido para sandbox
+                    "phones": [
+                        {
+                            "country": "55",
+                            "area": "11",
+                            "number": "999999999",
+                            "type": "MOBILE"
+                        }
+                    ]
+                },
+                "shipping": {
+                    "address": {
+                        "street": "Rua de Teste",
+                        "number": "123",
+                        "complement": "Apto 45",
+                        "locality": "Bairro",
+                        "city": "São Paulo",
+                        "region_code": "SP",
+                        "country": "BRA",
+                        "postal_code": "01234567"
+                    }
+                }
+            }
 
-    # GET request → render checkout
+            try:
+                response = requests.post(
+                    "https://ws.sandbox.pagbank.com.br/v2/checkout",
+                    json=data,
+                    headers=headers,
+                    timeout=10
+                )
+                if response.status_code == 201:
+                    resp_json = response.json()
+                    for link in resp_json.get("links", []):
+                        if link.get("rel") == "PAY":
+                            return redirect(link["href"])
+                    messages.error(request, "Link de pagamento não encontrado.")
+                else:
+                    messages.error(request, f"Erro PagBank: {response.status_code} - {response.text}")
+            except requests.RequestException as e:
+                messages.error(request, f"Erro ao conectar com PagBank: {e}")
+
+            return redirect("carrinho")
+
+    # GET
     carrinho = request.session.get("carrinho", [])
     promocao_slug = request.session.get("promocao_slug")
     voltar_url = reverse('pedido_promocao', args=[promocao_slug]) if promocao_slug else reverse('carrinho')
@@ -392,18 +428,13 @@ def checkout_view(request):
         try:
             promocao = Promocao.objects.get(slug=promocao_slug)
         except Promocao.DoesNotExist:
-            promocao = None
+            pass
 
     return render(request, "checkout.html", {
         "carrinho": carrinho,
         "promocao": promocao,
         "voltar_url": voltar_url,
     })
-
-
-
-
-
    
 
 @login_required(login_url='login')
@@ -588,3 +619,4 @@ def cadastro_borda(request):
         'bordas': bordas,
         'sucesso': sucesso
     })
+
