@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect, get_object_or_404
-from capizzas_restaurant.models import Pizza, Compra, Bebida, CompraBebida, Promocao, ProdutoDiverso, Cliente, Borda
+from capizzas_restaurant.models import Pizza, Compra, Bebida, CompraBebida, Promocao, ProdutoDiverso, Cliente, Borda, CompraItemPizza
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.serializers.json import DjangoJSONEncoder
 import json
@@ -8,7 +8,6 @@ from django.contrib import messages
 from .forms import PizzaForm, ClienteForm, CompraForm, BebidaForm, PromocaoForm, ProdutoDiversoForm, BordaForm
 from django.contrib.auth import authenticate, login
 from django.views.decorators.http import require_http_methods, require_POST
-from .models import CompraItemPizza, Promocao, Cliente, ProdutoDiverso, Borda
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
@@ -20,12 +19,12 @@ import requests
 from xml.etree import ElementTree as ET
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-import requests
-from django.conf import settings
-from django.urls import reverse
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
+
+
+
+
+
+
 
 
 
@@ -620,3 +619,106 @@ def cadastro_borda(request):
         'sucesso': sucesso
     })
 
+
+import json
+
+
+@login_required
+@require_POST
+def pagamento_pagbank(request):
+    try:
+        compra = Compra.objects.filter(cliente__user=request.user).order_by('-timestamp').first()
+        if not compra:
+            return JsonResponse({"error": "Compra não encontrada"}, status=404)
+
+        # Payload conforme exigência do PagBank
+        data = {
+            "email": settings.PAGBANK_EMAIL,
+            "token": settings.PAGBANK_TOKEN,
+            "currency": "BRL",
+            "reference": f"compra-{compra.pk}",
+            "redirectURL": request.build_absolute_uri("/obrigado/"),
+            "notificationURL": request.build_absolute_uri("/pagbank/notification/"),
+            "itemId1": "001",
+            "itemDescription1": "Pedido de Pizzas e Bebidas",
+            "itemAmount1": f"{compra.preco_final:.2f}",  # Ex: "10.00"
+            "itemQuantity1": "1"
+        }
+
+        # Sem headers → requests vai aplicar o correto para form-urlencoded
+        response = requests.post(
+            "https://ws.sandbox.pagbank.com.br/v2/checkout",
+            data=data
+        )
+
+        if response.status_code == 200:
+            root = ET.fromstring(response.text)
+            code_elem = root.find("code")
+            if code_elem is None or not code_elem.text:
+                return JsonResponse({"error": "Código de pagamento não encontrado no XML"}, status=500)
+
+            code = code_elem.text
+            compra.codigo_pagamento = code
+            compra.status_pagamento = "Aguardando"
+            compra.save()
+
+            return JsonResponse({
+                "pagamento_url": f"https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code={code}"
+            })
+
+        return JsonResponse({
+            "error": f"Erro ao criar pagamento: {response.status_code}",
+            "resposta": response.text
+        }, status=500)
+
+    except Exception as e:
+        return JsonResponse({"error": f"Erro inesperado: {str(e)}"}, status=500)
+
+
+
+@csrf_exempt
+@require_POST
+def pagbank_notification(request):
+    notification_code = request.POST.get("notificationCode")
+    if not notification_code:
+        return JsonResponse({"error": "notificationCode ausente"}, status=400)
+
+    url = f"https://ws.sandbox.pagbank.com.br/v2/notifications/{notification_code}"
+    params = {
+        "email": settings.PAGBANK_EMAIL,
+        "token": settings.PAGBANK_TOKEN,
+    }
+
+    response = requests.get(url, params=params)
+    if response.status_code != 200:
+        return JsonResponse({"error": "Erro ao consultar notificação"}, status=400)
+
+    try:
+        root = ET.fromstring(response.text)
+        status_elem = root.find("status")
+        reference_elem = root.find("reference")
+
+        if status_elem is None or status_elem.text is None:
+            return JsonResponse({"error": "Status ausente na notificação"}, status=400)
+        if reference_elem is None or reference_elem.text is None:
+            return JsonResponse({"error": "Reference ausente na notificação"}, status=400)
+
+        status = status_elem.text
+        reference = reference_elem.text
+
+        compra_id = int(reference.replace("compra-", ""))
+        compra = Compra.objects.get(id=compra_id)
+
+        status_map = {
+            "1": "Aguardando",
+            "2": "Em análise",
+            "3": "Pago",
+            "7": "Cancelado"
+        }
+
+        compra.status_pagamento = status_map.get(status, "Outro")
+        compra.save()
+    except Exception as e:
+        return JsonResponse({"error": f"Erro ao processar notificação: {str(e)}"}, status=500)
+
+    return JsonResponse({"success": True})

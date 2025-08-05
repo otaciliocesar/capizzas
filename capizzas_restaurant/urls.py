@@ -34,6 +34,8 @@ urlpatterns = [
     path('excluir/diverso/<int:produto_id>/', views.excluir_diverso, name='excluir_diverso'),
     path('cadastrocliente/', views.cadastro_cliente, name='cadastrocliente'),
     path('checkout/', views.checkout_view, name='checkout'),
+    path("pagamento/", views.pagamento_pagbank, name="pagamento_pagbank"),
+    path("pagseguro/notification/", views.pagbank_notification, name="pagbank_notification"),
     path('recuperar-senha/', auth_views.PasswordResetView.as_view(from_email='contato@capizzas.com', template_name='recuperar_senha.html'), name='password_reset'),
     path('recuperar-senha/enviado/', auth_views.PasswordResetDoneView.as_view(template_name='recuperar_senha_enviado.html'), name='password_reset_done'),
     path('resetar/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='resetar_senha.html'), name='password_reset_confirm'),

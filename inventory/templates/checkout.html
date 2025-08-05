@@ -91,39 +91,35 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    // Coloca o JSON do carrinho no input hidden (igual já tem no seu template)
-    const pedido = JSON.parse(document.getElementById("pedido_final_json").textContent);
-    document.querySelector('input[name="pedido_final"]').value = JSON.stringify(pedido);
+  const btnConfirmar = document.getElementById("btn-confirmar");
+  btnConfirmar.addEventListener("click", () => {
+    btnConfirmar.disabled = true;
+    btnConfirmar.textContent = "Processando...";
 
-    const btnConfirmar = document.getElementById("btn-confirmar");
-    btnConfirmar.addEventListener("click", () => {
-      btnConfirmar.disabled = true;
-      btnConfirmar.textContent = "Processando...";
-
-      fetch("{% url 'pagamento_pagbank' %}", {
-        method: "POST",
-        headers: {
-          "X-CSRFToken": "{{ csrf_token }}",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({})  // corpo vazio, usa sessão
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.pagamento_url) {
-          window.location.href = data.pagamento_url;
-        } else {
-          alert(data.error || "Erro ao iniciar pagamento.");
-          btnConfirmar.disabled = false;
-          btnConfirmar.textContent = "✅ Confirmar Pedido";
-        }
-      })
-      .catch(() => {
-        alert("Erro inesperado, tente novamente.");
+    fetch("{% url 'pagamento_pagbank' %}", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({})
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.pagamento_url) {
+        window.location.href = data.pagamento_url;
+      } else {
+        alert(data.error || "Erro ao iniciar pagamento.");
         btnConfirmar.disabled = false;
         btnConfirmar.textContent = "✅ Confirmar Pedido";
-      });
+      }
+    })
+    .catch(() => {
+      alert("Erro inesperado.");
+      btnConfirmar.disabled = false;
+      btnConfirmar.textContent = "✅ Confirmar Pedido";
     });
   });
+});
 </script>
 {% endblock %}

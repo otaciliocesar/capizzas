@@ -19,64 +19,35 @@ class ClienteForm(forms.ModelForm):
 
     class Meta:
         model = Cliente
-        fields = ['nome', 'sobrenome', 'email', 'endereco_entrega', 'numero', 'senha']
+        fields = [
+            'nome', 'sobrenome', 'email', 'telefone', 'endereco_entrega', 'numero',
+            'complemento', 'bairro', 'cidade', 'estado', 'cep', 'senha'
+        ]
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control'}),
             'sobrenome': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'telefone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '(XX) 9XXXX-XXXX'}),
             'endereco_entrega': forms.TextInput(attrs={'class': 'form-control'}),
-            'numero': forms.TextInput(attrs={
-            'class': 'form-control',
-            'id': 'id_numero',
-            'placeholder': '(XX) 9XXXX-XXXX'
-        }),
-    }
+            'numero': forms.TextInput(attrs={'class': 'form-control'}),
+            'complemento': forms.TextInput(attrs={'class': 'form-control'}),
+            'bairro': forms.TextInput(attrs={'class': 'form-control'}),
+            'cidade': forms.TextInput(attrs={'class': 'form-control'}),
+            'estado': forms.TextInput(attrs={'class': 'form-control', 'maxlength': 2}),
+            'cep': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'XXXXX-XXX'}),
+        }
 
-    def clean_senha(self):
-        senha = self.cleaned_data.get('senha')
-        if not senha:
-            raise forms.ValidationError("Este campo é obrigatório.")
-        if len(senha) < 8:
-            raise forms.ValidationError("A senha deve ter no mínimo 8 caracteres.")
-        if not re.search(r'[A-Z]', senha):
-            raise forms.ValidationError("A senha deve conter pelo menos uma letra maiúscula.")
-        if not re.search(r'[a-z]', senha):
-            raise forms.ValidationError("A senha deve conter pelo menos uma letra minúscula.")
-        if not re.search(r'\d', senha):
-            raise forms.ValidationError("A senha deve conter pelo menos um número.")
-        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', senha):
-            raise forms.ValidationError("A senha deve conter pelo menos um caractere especial.")
-        return senha
+    def clean_cep(self):
+        cep = self.cleaned_data.get("cep")
+        if cep and not re.match(r'^\d{5}-\d{3}$', cep):
+            raise forms.ValidationError("CEP inválido. Use o formato XXXXX-XXX.")
+        return cep
 
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-
-        if not email:
-            raise forms.ValidationError("Este campo é obrigatório.")
-
-        try:
-            validate_email(email)
-        except ValidationError:
-            raise forms.ValidationError("E-mail inválido.")
-
-        if User.objects.filter(username=email).exists():
-            raise forms.ValidationError("Este e-mail já está em uso.")
-
-        return email
-
-    def clean_numero(self):
-        numero = self.cleaned_data.get('numero')
-
-        if not numero:
-            raise forms.ValidationError("Este campo é obrigatório.")
-
-    # Aceita formatos como: (11) 91234-5678 ou (11) 1234-5678
-        pattern = r'^\(\d{2}\)\s?\d{4,5}-\d{4}$'
-
-        if not re.match(pattern, numero):
-                raise forms.ValidationError("Número inválido. Use o formato (XX) 9XXXX-XXXX ou (XX) XXXX-XXXX.")
-
-        return numero
+    def clean_telefone(self):
+        telefone = self.cleaned_data.get("telefone")
+        if telefone and not re.match(r'^\(\d{2}\)\s?\d{4,5}-\d{4}$', telefone):
+            raise forms.ValidationError("Telefone inválido. Use o formato (XX) 9XXXX-XXXX.")
+        return telefone
 
 class CompraForm(forms.ModelForm):
     class Meta:
